@@ -12,4 +12,11 @@ def configure(ctx):
 def build(ctx):
   t = ctx.new_task_gen('cxx', 'shlib', 'node_addon')
   t.target = 'heap-profiler'
-  t.source = 'heap.cc'
+  t.source = """
+    snapshot.cc
+    graph_edge.cc
+    graph_node.cc
+    graph_path.cc
+    snapshot_diff.cc
+    heap.cc
+  """
