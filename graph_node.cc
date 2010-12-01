@@ -14,6 +14,7 @@ void GraphNode::Initialize() {
   node_template_->SetAccessor(String::New("type"), GraphNode::GetType);
   node_template_->SetAccessor(String::New("name"), GraphNode::GetName);
   node_template_->SetAccessor(String::New("id"), GraphNode::GetId);
+  node_template_->SetAccessor(String::New("ptr"), GraphNode::GetPtr);
   node_template_->SetAccessor(String::New("instancesCount"), GraphNode::GetInstancesCount);
   node_template_->SetAccessor(String::New("childrenCount"), GraphNode::GetChildrenCount);
   node_template_->SetAccessor(String::New("retainersCount"), GraphNode::GetRetainersCount);
@@ -74,6 +75,14 @@ Handle<Value> GraphNode::GetId(Local<String> property, const AccessorInfo& info)
   Local<Object> self = info.Holder();
   void* ptr = self->GetPointerFromInternalField(0);
   uint64_t id = static_cast<HeapGraphNode*>(ptr)->GetId();
+  return scope.Close(Integer::NewFromUnsigned(id));
+}
+
+Handle<Value> GraphNode::GetPtr(Local<String> property, const AccessorInfo& info) {
+  HandleScope scope;
+  Local<Object> self = info.Holder();
+  void* ptr = self->GetPointerFromInternalField(0);
+  uint64_t id = reinterpret_cast<uint64_t>(ptr);
   return scope.Close(Integer::NewFromUnsigned(id));
 }
 
