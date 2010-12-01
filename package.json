@@ -1,0 +1,10 @@
+{
+    "name": "v8-profiler",
+    "version": "0.0.1",
+    "description": "node bindings for the v8 profiler",
+    "homepage": "http://github.com/dannycoates/v8-profiler",
+    "author": "Danny Coates <dannycoates@gmail.com>",
+    "keywords": ["profiler", "inspector"],
+    "engines" : { "node": ">=0.3.1" },
+    "main" : "v8-profiler"
+}
