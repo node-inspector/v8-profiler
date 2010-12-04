@@ -20,25 +20,25 @@ Handle<Value> GraphEdge::GetType(Local<String> property, const AccessorInfo& inf
   HandleScope scope;
   Local<Object> self = info.Holder();
   void* ptr = self->GetPointerFromInternalField(0);
-  HeapGraphEdge::Type type = static_cast<HeapGraphEdge*>(ptr)->GetType();
+  int32_t type = static_cast<int32_t>(static_cast<HeapGraphEdge*>(ptr)->GetType());
   Local<String> t;
   switch(type) {
-    case HeapGraphEdge::kContextVariable :
+    case 0: //HeapGraphEdge::kContextVariable :
     t = String::New("ContextVariable");
     break;
-    case HeapGraphEdge::kElement :
+    case 1: //HeapGraphEdge::kElement :
     t = String::New("Element");
     break;
-    case HeapGraphEdge::kProperty :
+    case 2: //HeapGraphEdge::kProperty :
     t = String::New("Property");
     break;
-    case HeapGraphEdge::kInternal :
+    case 3: //HeapGraphEdge::kInternal :
     t = String::New("Internal");
     break;
-    case HeapGraphEdge::kHidden :
+    case 4: //HeapGraphEdge::kHidden :
     t = String::New("Hidden");
     break;
-    case HeapGraphEdge::kShortcut :
+    case 5: //HeapGraphEdge::kShortcut :
     t = String::New("Shortcut");
     break;
     default:
