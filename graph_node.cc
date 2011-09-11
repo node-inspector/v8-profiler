@@ -1,6 +1,5 @@
 #include "graph_node.h"
 #include "graph_edge.h"
-#include "graph_path.h"
 
 using namespace v8;
 
@@ -15,16 +14,13 @@ void GraphNode::Initialize() {
   node_template_->SetAccessor(String::New("name"), GraphNode::GetName);
   node_template_->SetAccessor(String::New("id"), GraphNode::GetId);
   node_template_->SetAccessor(String::New("ptr"), GraphNode::GetPtr);
-  node_template_->SetAccessor(String::New("instancesCount"), GraphNode::GetInstancesCount);
   node_template_->SetAccessor(String::New("childrenCount"), GraphNode::GetChildrenCount);
   node_template_->SetAccessor(String::New("retainersCount"), GraphNode::GetRetainersCount);
   node_template_->SetAccessor(String::New("size"), GraphNode::GetSize);
-  node_template_->SetAccessor(String::New("retainingPathsCount"), GraphNode::GetRetainingPathsCount);
   node_template_->SetAccessor(String::New("dominatorNode"), GraphNode::GetDominator);
   node_template_->Set(String::New("getChild"), FunctionTemplate::New(GraphNode::GetChild));
   node_template_->Set(String::New("retainedSize"), FunctionTemplate::New(GraphNode::GetRetainedSize));
   node_template_->Set(String::New("getRetainer"), FunctionTemplate::New(GraphNode::GetRetainer));
-  node_template_->Set(String::New("getRetainingPath"), FunctionTemplate::New(GraphNode::GetRetainingPath));
 }
 
 Handle<Value> GraphNode::GetType(Local<String> property, const AccessorInfo& info) {
@@ -34,27 +30,29 @@ Handle<Value> GraphNode::GetType(Local<String> property, const AccessorInfo& inf
   int32_t type = static_cast<int32_t>(static_cast<HeapGraphNode*>(ptr)->GetType());
   Local<String> t;
   switch(type) {
-    case 1: //HeapGraphNode::kArray :
+    case HeapGraphNode::kArray :
     t = String::New("Array");
     break;
-    case 2: //HeapGraphNode::kString :
+    case HeapGraphNode::kString :
     t = String::New("String");
     break;
-    case 3: //HeapGraphNode::kObject :
+    case HeapGraphNode::kObject :
     t = String::New("Object");
     break;
-    case 4: //HeapGraphNode::kCode :
+    case HeapGraphNode::kCode :
     t = String::New("Code");
     break;
-    case 5: //HeapGraphNode::kClosure :
+    case HeapGraphNode::kClosure :
     t = String::New("Closure");
     break;
-    case 6: //HeapGraphNode::kRegExp :
+    case HeapGraphNode::kRegExp :
     t = String::New("RegExp");
     break;
-    case 7: //HeapGraphNode::kHeapNumber :
+    case HeapGraphNode::kHeapNumber :
     t = String::New("HeapNumber");
     break;
+		case HeapGraphNode::kNative :
+		t = String::New("Native");
     default:
     t = String::New("Hidden");
     break;
@@ -84,14 +82,6 @@ Handle<Value> GraphNode::GetPtr(Local<String> property, const AccessorInfo& info
   void* ptr = self->GetPointerFromInternalField(0);
   uint64_t id = reinterpret_cast<uint64_t>(ptr);
   return scope.Close(Integer::NewFromUnsigned(id));
-}
-
-Handle<Value> GraphNode::GetInstancesCount(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  Local<Object> self = info.Holder();
-  void* ptr = self->GetPointerFromInternalField(0);
-  int32_t count = static_cast<HeapGraphNode*>(ptr)->GetInstancesCount();
-  return scope.Close(Integer::New(count));
 }
 
 Handle<Value> GraphNode::GetChildrenCount(Local<String> property, const AccessorInfo& info) {
@@ -156,28 +146,6 @@ Handle<Value> GraphNode::GetRetainer(const Arguments& args) {
   void* ptr = self->GetPointerFromInternalField(0);
   const HeapGraphEdge* edge = static_cast<HeapGraphNode*>(ptr)->GetRetainer(index);
   return scope.Close(GraphEdge::New(edge));
-}
-
-Handle<Value> GraphNode::GetRetainingPathsCount(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  Local<Object> self = info.Holder();
-  void* ptr = self->GetPointerFromInternalField(0);
-  int32_t count = static_cast<HeapGraphNode*>(ptr)->GetRetainingPathsCount();
-  return scope.Close(Integer::New(count));
-}
-
-Handle<Value> GraphNode::GetRetainingPath(const Arguments& args) {
-  HandleScope scope;
-  if (args.Length() < 1) {
-    return ThrowException(Exception::Error(String::New("No index specified")));
-  } else if (!args[0]->IsInt32()) {
-    return ThrowException(Exception::Error(String::New("Argument must be integer")));
-  }
-  int32_t index = args[0]->Int32Value();
-  Handle<Object> self = args.This();
-  void* ptr = self->GetPointerFromInternalField(0);
-  const HeapGraphPath* path = static_cast<HeapGraphNode*>(ptr)->GetRetainingPath(index);
-  return scope.Close(GraphPath::New(path));
 }
 
 Handle<Value> GraphNode::GetDominator(Local<String> property, const AccessorInfo& info) {

@@ -94,6 +94,11 @@ exports.snapshotCount = function() {
   return heapCache.length;
 }
 
+exports.deleteAllSnapshots = function () {
+	heapCache = [];
+	binding.deleteAllSnapshots();
+}
+
 var cpuCache = [];
 
 exports.startProfiling = function(name) {
@@ -117,6 +122,11 @@ exports.findProfile = function(uid) {
 
 exports.profileCount = function() {
   return cpuCache.length;
+}
+
+exports.deleteAllProfiles = function() {
+	cpuCache = [];
+	binding.deleteAllProfiles();
 }
 
 process.profiler = exports;

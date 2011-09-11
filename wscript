@@ -16,8 +16,6 @@ def build(ctx):
     snapshot.cc
     graph_edge.cc
     graph_node.cc
-    graph_path.cc
-    snapshot_diff.cc
     profile.cc
     profile_node.cc
     profiler.cc

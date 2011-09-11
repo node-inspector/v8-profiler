@@ -14,6 +14,7 @@ void Profile::Initialize() {
   profile_template_->SetAccessor(String::New("uid"), Profile::GetUid);
   profile_template_->SetAccessor(String::New("topRoot"), Profile::GetTopRoot);
   profile_template_->SetAccessor(String::New("bottomRoot"), Profile::GetBottomRoot);
+  profile_template_->Set(String::New("delete"), FunctionTemplate::New(Profile::Delete));
 }
 
 Handle<Value> Profile::GetUid(Local<String> property, const AccessorInfo& info) {
@@ -48,6 +49,14 @@ Handle<Value> Profile::GetBottomRoot(Local<String> property, const AccessorInfo&
   void* ptr = self->GetPointerFromInternalField(0);
   const CpuProfileNode* node = static_cast<CpuProfile*>(ptr)->GetBottomUpRoot();
   return scope.Close(ProfileNode::New(node));
+}
+
+Handle<Value> Profile::Delete(const Arguments& args) {
+	HandleScope scope;
+  Handle<Object> self = args.This();
+	void* ptr = self->GetPointerFromInternalField(0);
+  static_cast<CpuProfile*>(ptr)->Delete();
+	return Undefined();
 }
 
 Handle<Value> Profile::New(const CpuProfile* profile) {
