@@ -2,6 +2,51 @@ var binding = require("./build/default/profiler");
 
 function Snapshot() {}
 
+Snapshot.prototype.children = function(node, order) {
+  var i, children = [], order = order || "retainedSize";
+  for(i = 0; i < node.childrenCount; i++) {
+    children[i] = node.getChild(i);
+  }
+  children.sort(function (a, b){
+    return a[order] - b[order];
+  });
+  return children;
+}
+
+Snapshot.prototype.topDominatorIds = function() {
+  var doms = {}, arr;
+  this.allNodes().forEach(function(node){
+    var dom = node.dominatorNode || { id: "none"};
+    if (doms[dom.id]) {
+      doms[dom.id] += 1;
+    }
+    else {
+      doms[dom.id] = 1;
+    }
+  });
+  arr = Object.keys(doms).map(function(d){
+    return {id: d, count: doms[d]};
+  });
+  arr.sort(funtion(a, b) {
+    return a.count - b.count;
+  });
+  return arr;
+}
+
+Snapshot.prototype.topDominators = function() {
+  return this.topDominatorIds().map(function(id){
+    return this.getNodeById(id);
+  });
+}
+
+Snapshot.prototype.allNodes = function() {
+  var n = this.nodesCount, i, nodes;
+  for (i = 0; i < n; i++) {
+    nodes[i] = this.getNode(i);
+  }
+  return nodes;
+}
+
 //adapted from WebCore/bindings/v8/ScriptHeapSnapshot.cpp
 Snapshot.prototype.stringify = function() {
   var root = this.root, i, j, count_i, count_j, node,
@@ -24,7 +69,7 @@ Snapshot.prototype.stringify = function() {
       };
     }
     // FIXME: the children portion is too slow and bloats the results
-    /*
+    //*
     else {
       entry = {
         constructorName: node.name
