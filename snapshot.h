@@ -19,7 +19,10 @@ class Snapshot {
    static Handle<Value> GetTitle(Local<String> property, const AccessorInfo& info);
    static Handle<Value> GetRoot(Local<String> property, const AccessorInfo& info);
    static Handle<Value> GetType(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> CompareWith(const Arguments& args);
+   static Handle<Value> GetNodesCount(Local<String> property, const AccessorInfo& info);
+   static Handle<Value> GetNodeById(const Arguments& args);
+   static Handle<Value> GetNode(const Arguments& args);
+   static Handle<Value> Delete(const Arguments& args);
    static void Initialize();
    static Persistent<ObjectTemplate> snapshot_template_;
 };

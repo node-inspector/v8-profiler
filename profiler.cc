@@ -12,7 +12,7 @@ static Handle<Value> TakeSnapshot(const Arguments& args) {
   HandleScope scope;
   Local<String> title = String::New("");
   int32_t len = args.Length();
-  HeapSnapshot::Type mode = HeapSnapshot::kAggregated;
+  HeapSnapshot::Type mode = HeapSnapshot::kFull;
   if (len > 0) {
     title = args[0]->ToString();
   }
@@ -50,21 +50,27 @@ static Handle<Value> GetSnapshotsCount(const Arguments& args) {
   return scope.Close(Integer::New(HeapProfiler::GetSnapshotsCount()));
 }
 
-Handle<Value> StartProfiling(const Arguments& args) {
+static Handle<Value> DeleteAllSnapshots(const Arguments& args) {
+	HandleScope scope;
+	HeapProfiler::DeleteAllSnapshots();
+	return Undefined();
+}
+
+static Handle<Value> StartProfiling(const Arguments& args) {
   HandleScope scope;
   Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
   v8::CpuProfiler::StartProfiling(title);
   return Undefined();
 }
 
-Handle<Value> StopProfiling(const Arguments& args) {
+static Handle<Value> StopProfiling(const Arguments& args) {
   HandleScope scope;
   Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
   const CpuProfile* profile = v8::CpuProfiler::StopProfiling(title);
   return scope.Close(Profile::New(profile));
 }
 
-Handle<Value> GetProfile(const Arguments& args) {
+static Handle<Value> GetProfile(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1) {
     return ThrowException(Exception::Error(String::New("No index specified")));
@@ -76,7 +82,7 @@ Handle<Value> GetProfile(const Arguments& args) {
   return scope.Close(Profile::New(profile));
 }
 
-Handle<Value> FindProfile(const Arguments& args) {
+static Handle<Value> FindProfile(const Arguments& args) {
   HandleScope scope;
   if (args.Length() < 1) {
     return ThrowException(Exception::Error(String::New("No index specified")));
@@ -88,9 +94,15 @@ Handle<Value> FindProfile(const Arguments& args) {
   return scope.Close(Profile::New(profile));
 }
 
-Handle<Value> GetProfilesCount(const Arguments& args) {
+static Handle<Value> GetProfilesCount(const Arguments& args) {
   HandleScope scope;
   return scope.Close(Integer::New(v8::CpuProfiler::GetProfilesCount()));
+}
+
+static Handle<Value> DeleteAllProfiles(const Arguments& args) {
+	HandleScope scope;
+	v8::CpuProfiler::DeleteAllProfiles();
+	return Undefined();
 }
 
 extern "C" void init(Handle<Object> target) {
@@ -100,10 +112,13 @@ extern "C" void init(Handle<Object> target) {
   NODE_SET_METHOD(target, "getSnapshot", GetSnapshot);
   NODE_SET_METHOD(target, "findSnapshot", FindSnapshot);
   NODE_SET_METHOD(target, "snapshotCount", GetSnapshotsCount);
+  NODE_SET_METHOD(target, "deleteAllSnapshots", DeleteAllSnapshots);
+	//TODO DefineWrapperClass
   
   NODE_SET_METHOD(target, "startProfiling", StartProfiling);
   NODE_SET_METHOD(target, "stopProfiling", StopProfiling);
   NODE_SET_METHOD(target, "getProfile", GetProfile);
   NODE_SET_METHOD(target, "findProfile", FindProfile);
   NODE_SET_METHOD(target, "getProfilesCount", GetProfilesCount);
+  NODE_SET_METHOD(target, "deleteAllProfiles", DeleteAllProfiles);
 }

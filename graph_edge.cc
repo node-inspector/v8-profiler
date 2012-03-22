@@ -23,22 +23,22 @@ Handle<Value> GraphEdge::GetType(Local<String> property, const AccessorInfo& inf
   int32_t type = static_cast<int32_t>(static_cast<HeapGraphEdge*>(ptr)->GetType());
   Local<String> t;
   switch(type) {
-    case 0: //HeapGraphEdge::kContextVariable :
+    case HeapGraphEdge::kContextVariable :
     t = String::New("ContextVariable");
     break;
-    case 1: //HeapGraphEdge::kElement :
+    case HeapGraphEdge::kElement :
     t = String::New("Element");
     break;
-    case 2: //HeapGraphEdge::kProperty :
+    case HeapGraphEdge::kProperty :
     t = String::New("Property");
     break;
-    case 3: //HeapGraphEdge::kInternal :
+    case HeapGraphEdge::kInternal :
     t = String::New("Internal");
     break;
-    case 4: //HeapGraphEdge::kHidden :
+    case HeapGraphEdge::kHidden :
     t = String::New("Hidden");
     break;
-    case 5: //HeapGraphEdge::kShortcut :
+    case HeapGraphEdge::kShortcut :
     t = String::New("Shortcut");
     break;
     default:

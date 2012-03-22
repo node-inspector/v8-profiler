@@ -19,6 +19,7 @@ class Profile {
   static Handle<Value> GetTitle(Local<String> property, const AccessorInfo& info);
   static Handle<Value> GetTopRoot(Local<String> property, const AccessorInfo& info);
   static Handle<Value> GetBottomRoot(Local<String> property, const AccessorInfo& info);
+	static Handle<Value> Delete(const Arguments& args);
   static void Initialize();
   static Persistent<ObjectTemplate> profile_template_;
 };
