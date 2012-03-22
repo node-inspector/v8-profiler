@@ -3,7 +3,6 @@
 #ifndef NODE_GRAPH_NODE_
 #define NODE_GRAPH_NODE_
 
-#include <v8.h>
 #include <v8-profiler.h>
 
 using namespace v8;
