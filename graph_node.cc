@@ -1,5 +1,6 @@
 #include "graph_node.h"
 #include "graph_edge.h"
+#include "node_version.h"
 
 using namespace v8;
 
@@ -124,9 +125,20 @@ Handle<Value> GraphNode::GetChild(const Arguments& args) {
 
 Handle<Value> GraphNode::GetRetainedSize(const Arguments& args) {
   HandleScope scope;
+
   Handle<Object> self = args.This();
   void* ptr = self->GetPointerFromInternalField(0);
+  
+#if NODE_VERSION_AT_LEAST(0, 7, 0)
   int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize();
+#else
+  bool exact = false;
+  if (args.Length() > 0) {
+    exact = args[0]->BooleanValue();
+  }
+  int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize(exact); 
+#endif
+  
   return scope.Close(Integer::New(size));
 }
 
