@@ -170,6 +170,7 @@ CpuProfile.prototype.stringify = function() {
 var heapCache = [];
 
 exports.takeSnapshot = function(name, mode) {
+  var name = name ? name : 'org.nodejs.profiles.user-initiated.' + (heapCache.length + 1);
   var type = (mode === 'full') ? 0 : 1;
   var snapshot = binding.takeSnapshot(name, type);
   snapshot.__proto__ = Snapshot.prototype;
