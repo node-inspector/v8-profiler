@@ -124,13 +124,9 @@ Handle<Value> GraphNode::GetChild(const Arguments& args) {
 
 Handle<Value> GraphNode::GetRetainedSize(const Arguments& args) {
   HandleScope scope;
-  bool exact = false;
-  if (args.Length() > 0) {
-    exact = args[0]->BooleanValue();
-  }
   Handle<Object> self = args.This();
   void* ptr = self->GetPointerFromInternalField(0);
-  int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize(exact);
+  int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize();
   return scope.Close(Integer::New(size));
 }
 
