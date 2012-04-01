@@ -1,4 +1,3 @@
-#include <v8.h>
 #include <v8-profiler.h>
 #include <node.h>
 #include "snapshot.h"
@@ -11,15 +10,20 @@ using namespace nodex;
 static Handle<Value> TakeSnapshot(const Arguments& args) {
   HandleScope scope;
   Local<String> title = String::New("");
-  int32_t len = args.Length();
+  uint32_t len = args.Length();
+
   HeapSnapshot::Type mode = HeapSnapshot::kFull;
+  
   if (len > 0) {
     title = args[0]->ToString();
   }
+  
   if (len > 1 && args[1]->IsInt32()) {
     mode = static_cast<HeapSnapshot::Type>(args[1]->Int32Value());
   }
+  
   const HeapSnapshot* snapshot = HeapProfiler::TakeSnapshot(title, mode);
+
   return scope.Close(Snapshot::New(snapshot));
 }
 
@@ -32,6 +36,7 @@ static Handle<Value> GetSnapshot(const Arguments& args) {
   }
   int32_t index = args[0]->Int32Value();
   const HeapSnapshot* snapshot = HeapProfiler::GetSnapshot(index);
+
   return scope.Close(Snapshot::New(snapshot));
 }
 
@@ -40,8 +45,10 @@ static Handle<Value> FindSnapshot(const Arguments& args) {
   if (args.Length() < 1) {
     return ThrowException(Exception::Error(String::New("No uid specified")));
   }
+
   uint32_t uid = args[0]->Uint32Value();
   const HeapSnapshot* snapshot = HeapProfiler::FindSnapshot(uid);
+  
   return scope.Close(Snapshot::New(snapshot));
 }
 

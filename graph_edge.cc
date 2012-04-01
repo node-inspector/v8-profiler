@@ -21,29 +21,29 @@ Handle<Value> GraphEdge::GetType(Local<String> property, const AccessorInfo& inf
   Local<Object> self = info.Holder();
   void* ptr = self->GetPointerFromInternalField(0);
   int32_t type = static_cast<int32_t>(static_cast<HeapGraphEdge*>(ptr)->GetType());
+
   Local<String> t;
   switch(type) {
     case HeapGraphEdge::kContextVariable :
-    t = String::New("ContextVariable");
-    break;
+      t = String::New("ContextVariable");
+      break;
     case HeapGraphEdge::kElement :
-    t = String::New("Element");
-    break;
+      t = String::New("Element");
+      break;
     case HeapGraphEdge::kProperty :
-    t = String::New("Property");
-    break;
+      t = String::New("Property");
+      break;
     case HeapGraphEdge::kInternal :
-    t = String::New("Internal");
-    break;
+      t = String::New("Internal");
+      break;
     case HeapGraphEdge::kHidden :
-    t = String::New("Hidden");
-    break;
+      t = String::New("Hidden");
+      break;
     case HeapGraphEdge::kShortcut :
-    t = String::New("Shortcut");
-    break;
+      t = String::New("Shortcut");
+      break;
     default:
-    t = String::New("Unknown");
-    break;
+      t = String::New("Unknown");
   }
   return scope.Close(t);
 }
@@ -88,4 +88,4 @@ Handle<Value> GraphEdge::New(const HeapGraphEdge* edge) {
     return scope.Close(obj);
   }
 }
-}
+} //namespace nodex
