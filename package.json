@@ -6,5 +6,8 @@
     "author": "Danny Coates <dannycoates@gmail.com>",
     "keywords": ["profiler", "inspector"],
     "engines" : { "node": ">=0.6" },
-    "main" : "v8-profiler"
+    "main" : "v8-profiler",
+    "scripts": {
+        "postinstall": "ln -s build/Release/profiler.node profiler.node"
+    }
 }
