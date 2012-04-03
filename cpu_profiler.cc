@@ -22,9 +22,7 @@ namespace nodex {
 		target->Set(String::NewSymbol("cpuProfiler"), cpuProfilerObj);
 	}
 
-	CpuProfiler::CpuProfiler() {
- 	}
-
+	CpuProfiler::CpuProfiler() {}
   CpuProfiler::~CpuProfiler() {}
 
 	Handle<Value> CpuProfiler::GetProfilesCount(const Arguments& args) {
@@ -33,7 +31,7 @@ namespace nodex {
 	}
 
 	Handle<Value> CpuProfiler::GetProfile(const Arguments& args) {
- 		HandleScope scope;
+		HandleScope scope;
   	if (args.Length() < 1) {
     	return ThrowException(Exception::Error(String::New("No index specified")));
   	} else if (!args[0]->IsInt32()) {
@@ -57,7 +55,7 @@ namespace nodex {
 	}
 
 	Handle<Value> CpuProfiler::StartProfiling(const Arguments& args) {
- 		HandleScope scope;
+		HandleScope scope;
   	Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
   	v8::CpuProfiler::StartProfiling(title);
   	return Undefined();

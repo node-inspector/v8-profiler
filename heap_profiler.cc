@@ -21,8 +21,6 @@ namespace nodex {
 
       	abort = reportProgress->Call(Context::GetCurrent()->Global(), 2, argv);
 
-      	fprintf(stderr, "Aquiiiiiii %i\n", done);
-
       	if (try_catch.HasCaught()) {
         	FatalException(try_catch);
         	return kAbort;
@@ -31,11 +29,9 @@ namespace nodex {
       	fprintf(stderr, "here!\n");
 
       	if (abort.IsEmpty() || !abort->IsBoolean()) {
-        	fprintf(stderr, "Return1 %i\n", kContinue);
         	return kContinue;
       	}
 
-      	fprintf(stderr, "Return2 %i", abort->IsTrue());
       	return abort->IsTrue() ? kAbort : kContinue;
     	}
 
@@ -55,13 +51,13 @@ namespace nodex {
 		NODE_SET_METHOD(heapProfilerObj, "takeSnapshot", HeapProfiler::TakeSnapshot);
   	NODE_SET_METHOD(heapProfilerObj, "getSnapshot", HeapProfiler::GetSnapshot);
   	NODE_SET_METHOD(heapProfilerObj, "findSnapshot", HeapProfiler::FindSnapshot);
- 	 	NODE_SET_METHOD(heapProfilerObj, "getSnapshotsCount", HeapProfiler::GetSnapshotsCount);
+ 		NODE_SET_METHOD(heapProfilerObj, "getSnapshotsCount", HeapProfiler::GetSnapshotsCount);
   	NODE_SET_METHOD(heapProfilerObj, "deleteAllSnapshots", HeapProfiler::DeleteAllSnapshots);
 
 		target->Set(String::NewSymbol("heapProfiler"), heapProfilerObj);
 	}
 
- 	HeapProfiler::HeapProfiler() {}
+	HeapProfiler::HeapProfiler() {}
   HeapProfiler::~HeapProfiler() {}
 	
   Handle<Value> HeapProfiler::GetSnapshotsCount(const Arguments& args) {
@@ -70,7 +66,7 @@ namespace nodex {
   }
 
   Handle<Value> HeapProfiler::GetSnapshot(const Arguments& args) {
- 		HandleScope scope;
+		HandleScope scope;
   	if (args.Length() < 1) {
     	return ThrowException(Exception::Error(String::New("No index specified")));
   	} else if (!args[0]->IsInt32()) {
@@ -119,7 +115,6 @@ namespace nodex {
     	}
   	}
 
-  	
   	const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
   	
   	return scope.Close(Snapshot::New(snapshot));
