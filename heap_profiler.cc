@@ -51,7 +51,7 @@ namespace nodex {
 		NODE_SET_METHOD(heapProfilerObj, "takeSnapshot", HeapProfiler::TakeSnapshot);
   	NODE_SET_METHOD(heapProfilerObj, "getSnapshot", HeapProfiler::GetSnapshot);
   	NODE_SET_METHOD(heapProfilerObj, "findSnapshot", HeapProfiler::FindSnapshot);
- 		NODE_SET_METHOD(heapProfilerObj, "getSnapshotsCount", HeapProfiler::GetSnapshotsCount);
+		NODE_SET_METHOD(heapProfilerObj, "getSnapshotsCount", HeapProfiler::GetSnapshotsCount);
   	NODE_SET_METHOD(heapProfilerObj, "deleteAllSnapshots", HeapProfiler::DeleteAllSnapshots);
 
 		target->Set(String::NewSymbol("heapProfiler"), heapProfilerObj);

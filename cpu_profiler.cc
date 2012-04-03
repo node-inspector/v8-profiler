@@ -62,7 +62,7 @@ namespace nodex {
 	}
 
 	Handle<Value> CpuProfiler::StopProfiling(const Arguments& args) {
- 		HandleScope scope;
+		HandleScope scope;
   	Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
   	const CpuProfile* profile = v8::CpuProfiler::StopProfiling(title);
   	return scope.Close(Profile::New(profile));
