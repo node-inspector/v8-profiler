@@ -1,6 +1,7 @@
 #include "snapshot.h"
 #include "graph_node.h"
 #include "node.h"
+#include "node_buffer.h"
 
 using namespace v8;
 using namespace node;
@@ -52,24 +53,27 @@ Handle<Value> Snapshot::GetType(Local<String> property, const AccessorInfo& info
   HandleScope scope;
   Local<Object> self = info.Holder();
   void* ptr = self->GetPointerFromInternalField(0);
+  
   HeapSnapshot::Type type = static_cast<HeapSnapshot*>(ptr)->GetType();
   Local<String> t;
+  
   switch(type) {
-    case HeapSnapshot::kFull :
-    t = String::New("Full");
-    break;
+    case HeapSnapshot::kFull:
+      t = String::New("Full");
+      break;
     default:
-    t = String::New("Unknown");
-    break;
+      t = String::New("Unknown");
   }
+  
   return scope.Close(t);
 }
 
 Handle<Value> Snapshot::GetNodesCount(Local<String> property, const AccessorInfo& info) {
-    HandleScope scope;
-    Local<Object> self = info.Holder();
-    void* ptr = self->GetPointerFromInternalField(0);
-    Local<Integer> count = Integer::New(static_cast<HeapSnapshot*>(ptr)->GetNodesCount());
+  HandleScope scope;
+  Local<Object> self = info.Holder();
+  void* ptr = self->GetPointerFromInternalField(0);
+  Local<Integer> count = Integer::New(static_cast<HeapSnapshot*>(ptr)->GetNodesCount());
+  
   return scope.Close(count);
 }
 
@@ -132,7 +136,6 @@ class OutputStreamAdapter : public v8::OutputStream {
       Local<String> onEnd = String::New("onEnd");
       Local<String> onData = String::New("onData");
 
-      
       if (!arg->IsObject()) {
         ThrowException(Exception::TypeError(
           String::New("You must specify an Object as first argument")));
@@ -151,6 +154,8 @@ class OutputStreamAdapter : public v8::OutputStream {
 
       onEndFunction = Local<Function>::Cast(obj->Get(onEnd));
       onDataFunction = Local<Function>::Cast(obj->Get(onData));
+
+      abort = Local<Value>::New(Boolean::New(false));
     }
      
     void EndOfStream() {
@@ -167,23 +172,30 @@ class OutputStreamAdapter : public v8::OutputStream {
     }
     
     WriteResult WriteAsciiChunk(char* data, int size) {
-      Local<Value> argv[2] = {
-        String::New(data), 
+      HandleScope scope;
+      
+      Handle<Value> argv[2] = {
+        Buffer::New(data, size)->handle_,
         Integer::New(size)
       };
 
       TryCatch try_catch;
-      onDataFunction->Call(obj, 2, argv);
+      abort = onDataFunction->Call(obj, 2, argv);
 
       if (try_catch.HasCaught()) {
         FatalException(try_catch);
         return kAbort;
       }
 
-      return kContinue;
+      if (abort.IsEmpty() || !abort->IsBoolean()) {
+        return kContinue;
+      }
+
+      return abort->IsTrue() ? kAbort : kContinue;
     }
 
   private:
+    Local<Value> abort;
     Handle<Object> obj;
     Handle<Function> onEndFunction;
     Handle<Function> onDataFunction;
