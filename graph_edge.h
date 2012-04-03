@@ -3,7 +3,6 @@
 #ifndef NODE_GRAPH_EDGE_
 #define NODE_GRAPH_EDGE_
 
-#include <v8.h>
 #include <v8-profiler.h>
 
 using namespace v8;
