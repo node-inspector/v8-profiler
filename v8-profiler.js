@@ -214,6 +214,7 @@ exports.startProfiling = function(name) {
 }
 
 exports.stopProfiling = function(name) {
+  name = name ? name : '';
   var profile = binding.cpuProfiler.stopProfiling(name);
   profile.__proto__ = CpuProfile.prototype;
   cpuCache.push(profile);
