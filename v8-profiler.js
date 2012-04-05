@@ -163,9 +163,13 @@ function inspectorObjectFor(node) {
   return result;
 }
 
-CpuProfile.prototype.stringify = function() {
-  return JSON.stringify(inspectorObjectFor(this.topRoot));
-}
+CpuProfile.prototype.getTopDownRoot = function() {
+  return inspectorObjectFor(this.topRoot);
+};
+
+CpuProfile.prototype.getBottomUpRoot = function() {
+  return inspectorObjectFor(this.bottomRoot);
+};
 
 var heapCache = [];
 
