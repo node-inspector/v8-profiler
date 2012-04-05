@@ -176,7 +176,7 @@ exports.takeSnapshot = function(name, control) {
   }
 
   if (!name || !name.length) {
-    name = 'org.nodejs.profiles.user-initiated.' + (heapCache.length + 1);
+    name = 'org.nodejs.profiles.heap.user-initiated.' + (heapCache.length + 1);
   }
 
   var snapshot = binding.heapProfiler.takeSnapshot(name, control);
@@ -206,6 +206,10 @@ exports.deleteAllSnapshots = function () {
 var cpuCache = [];
 
 exports.startProfiling = function(name) {
+  if (!name || !name.length) {
+    name = 'org.nodejs.profiles.cpu.user-initiated.' + (cpuCache.length + 1);
+  }
+
   binding.cpuProfiler.startProfiling(name);
 }
 
