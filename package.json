@@ -8,6 +8,6 @@
     "engines" : { "node": ">=0.6" },
     "main" : "v8-profiler",
     "scripts": {
-        "postinstall": "ln -s build/Release/profiler.node profiler.node"
+        "postinstall": "ln -sf build/Release/profiler.node profiler.node"
     }
 }
