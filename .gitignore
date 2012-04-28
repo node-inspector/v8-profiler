@@ -1,3 +1,4 @@
+/profiler.node
 build/*
 .lock-wscript
 *.swp
