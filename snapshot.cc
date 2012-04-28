@@ -216,6 +216,8 @@ Handle<Value> Snapshot::Serialize(const Arguments& args) {
 
   void* ptr = self->GetPointerFromInternalField(0);
   static_cast<HeapSnapshot*>(ptr)->Serialize(stream, HeapSnapshot::kJSON);
+
+  return Undefined();
 }
 
 } //namespace nodex

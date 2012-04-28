@@ -37,8 +37,8 @@ namespace nodex {
             }
 
         private:
-            Local<Value> abort;
             Handle<Function> reportProgress; 
+            Local<Value> abort;
     };
 
     void HeapProfiler::Initialize(Handle<Object> target) {
