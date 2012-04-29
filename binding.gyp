@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'v8-profiler',
+      'target_name': 'profiler',
       'sources': [
         'cpu_profiler.cc',
         'graph_edge.cc',
