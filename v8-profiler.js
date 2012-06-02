@@ -1,4 +1,4 @@
-var binding = require("./build/Release/profiler");
+var binding = require("./profiler");
 
 function Snapshot() {}
 
@@ -163,17 +163,30 @@ function inspectorObjectFor(node) {
   return result;
 }
 
-CpuProfile.prototype.stringify = function() {
-  return JSON.stringify(inspectorObjectFor(this.topRoot));
-}
+CpuProfile.prototype.getTopDownRoot = function() {
+  return inspectorObjectFor(this.topRoot);
+};
+
+CpuProfile.prototype.getBottomUpRoot = function() {
+  return inspectorObjectFor(this.bottomRoot);
+};
 
 var heapCache = [];
 
-exports.takeSnapshot = function(name, mode) {
-  var type = (mode === 'full') ? 0 : 1;
-  var snapshot = binding.takeSnapshot(name, type);
+exports.takeSnapshot = function(name, control) {
+  if (typeof name == 'function') {
+    control = name;
+    name = '';
+  }
+
+  if (!name || !name.length) {
+    name = 'org.nodejs.profiles.heap.user-initiated.' + (heapCache.length + 1);
+  }
+
+  var snapshot = binding.heapProfiler.takeSnapshot(name, control);
   snapshot.__proto__ = Snapshot.prototype;
   heapCache.push(snapshot);
+
   return snapshot;
 }
 
@@ -191,17 +204,22 @@ exports.snapshotCount = function() {
 
 exports.deleteAllSnapshots = function () {
 	heapCache = [];
-	binding.deleteAllSnapshots();
+	binding.heapProfiler.deleteAllSnapshots();
 }
 
 var cpuCache = [];
 
 exports.startProfiling = function(name) {
-  binding.startProfiling(name);
+  if (!name || !name.length) {
+    name = 'org.nodejs.profiles.cpu.user-initiated.' + (cpuCache.length + 1);
+  }
+
+  binding.cpuProfiler.startProfiling(name);
 }
 
 exports.stopProfiling = function(name) {
-  var profile = binding.stopProfiling(name);
+  name = name ? name : '';
+  var profile = binding.cpuProfiler.stopProfiling(name);
   profile.__proto__ = CpuProfile.prototype;
   cpuCache.push(profile);
   return profile;
@@ -221,7 +239,7 @@ exports.profileCount = function() {
 
 exports.deleteAllProfiles = function() {
 	cpuCache = [];
-	binding.deleteAllProfiles();
+	binding.cpuProfiler.deleteAllProfiles();
 }
 
 process.profiler = exports;

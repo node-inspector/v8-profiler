@@ -12,11 +12,4 @@ def configure(ctx):
 def build(ctx):
   t = ctx.new_task_gen('cxx', 'shlib', 'node_addon')
   t.target = 'profiler'
-  t.source = """
-    snapshot.cc
-    graph_edge.cc
-    graph_node.cc
-    profile.cc
-    profile_node.cc
-    profiler.cc
-  """
+  t.source = ctx.path.ant_glob('*.cc')

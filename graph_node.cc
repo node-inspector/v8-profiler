@@ -1,10 +1,11 @@
 #include "graph_node.h"
 #include "graph_edge.h"
+#include "node_version.h"
 
 using namespace v8;
 
 namespace nodex {
-  
+
 Persistent<ObjectTemplate> GraphNode::node_template_;
 
 void GraphNode::Initialize() {
@@ -31,31 +32,30 @@ Handle<Value> GraphNode::GetType(Local<String> property, const AccessorInfo& inf
   Local<String> t;
   switch(type) {
     case HeapGraphNode::kArray :
-    t = String::New("Array");
-    break;
+      t = String::New("Array");
+      break;
     case HeapGraphNode::kString :
-    t = String::New("String");
-    break;
+      t = String::New("String");
+      break;
     case HeapGraphNode::kObject :
-    t = String::New("Object");
-    break;
+      t = String::New("Object");
+      break;
     case HeapGraphNode::kCode :
-    t = String::New("Code");
-    break;
+      t = String::New("Code");
+      break;
     case HeapGraphNode::kClosure :
-    t = String::New("Closure");
-    break;
+      t = String::New("Closure");
+      break;
     case HeapGraphNode::kRegExp :
-    t = String::New("RegExp");
-    break;
+      t = String::New("RegExp");
+      break;
     case HeapGraphNode::kHeapNumber :
-    t = String::New("HeapNumber");
-    break;
+      t = String::New("HeapNumber");
+      break;
 		case HeapGraphNode::kNative :
-		t = String::New("Native");
+		  t = String::New("Native");
     default:
-    t = String::New("Hidden");
-    break;
+      t = String::New("Hidden");
   }
   return scope.Close(t);
 }
@@ -124,13 +124,20 @@ Handle<Value> GraphNode::GetChild(const Arguments& args) {
 
 Handle<Value> GraphNode::GetRetainedSize(const Arguments& args) {
   HandleScope scope;
+
+  Handle<Object> self = args.This();
+  void* ptr = self->GetPointerFromInternalField(0);
+
+#if NODE_VERSION_AT_LEAST(0, 7, 0)
+  int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize();
+#else
   bool exact = false;
   if (args.Length() > 0) {
     exact = args[0]->BooleanValue();
   }
-  Handle<Object> self = args.This();
-  void* ptr = self->GetPointerFromInternalField(0);
   int32_t size = static_cast<HeapGraphNode*>(ptr)->GetRetainedSize(exact);
+#endif
+
   return scope.Close(Integer::New(size));
 }
 
@@ -158,11 +165,11 @@ Handle<Value> GraphNode::GetDominator(Local<String> property, const AccessorInfo
 
 Handle<Value> GraphNode::New(const HeapGraphNode* node) {
   HandleScope scope;
-  
+
   if (node_template_.IsEmpty()) {
     GraphNode::Initialize();
   }
-  
+
   if(!node) {
     return Undefined();
   }
