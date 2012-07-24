@@ -23,6 +23,8 @@ namespace nodex {
             static Handle<Value> StopProfiling(const Arguments& args);
             static Handle<Value> DeleteAllProfiles(const Arguments& args);
 
+            static Handle<Value> GetProfileHeaders(const Arguments& args);
+
         private:
             static Persistent<ObjectTemplate> cpu_profiler_template_;
     };

@@ -4,43 +4,34 @@
 namespace nodex {
     Persistent<ObjectTemplate> HeapProfiler::heap_profiler_template_;
 
-    class ActivityControlAdapter : public v8::ActivityControl {
-        public:
-            ActivityControlAdapter(Handle<Value> progress)
-                :   reportProgress(Handle<Function>::Cast(progress)),
-                    abort(Local<Value>::New(Boolean::New(false))) {}
+	// Adapted from WebCore/bindings/v8/ScriptHeapSnapshot.cpp
+	class JSONOutputStream : public v8::OutputStream {
+		Handle<Array> &_result;
+		int _index;
 
-            ControlOption ReportProgressValue(int done, int total) {
-                HandleScope scope;
-
-                Local<Value> argv[2] = {
-                    Integer::New(done),
-                    Integer::New(total)
-                };
-
-                TryCatch try_catch;
-
-                abort = reportProgress->Call(Context::GetCurrent()->Global(), 2, argv);
-
-                if (try_catch.HasCaught()) {
-                    //FatalException(try_catch);
-					fprintf(stderr, "NodeProfiler: Caught exception!\n");
-                    return kAbort;
-                }
-
-                fprintf(stderr, "here!\n");
-
-                if (abort.IsEmpty() || !abort->IsBoolean()) {
-                    return kContinue;
-                }
-
-                return abort->IsTrue() ? kAbort : kContinue;
-            }
-
-        private:
-            Handle<Function> reportProgress; 
-            Local<Value> abort;
-    };
+	public:
+		JSONOutputStream(Handle<Array> &result)
+			: _result(result) {
+			_index = 0;
+		}
+		void EndOfStream() {
+			// Done!
+		}
+		int GetChunkSize() {
+			return 16384;
+		}
+		OutputEncoding GetOutputEncoding() {
+			return kAscii;
+		}
+		WriteResult WriteAsciiChunk(char *data, int size) {
+			_result->Set(_index++, String::New(data, size));
+			return kContinue;
+		}
+		WriteResult WriteHeapStatsChunk(HeapStatsUpdate *data, int count) {
+			// Ignored for now
+			return kContinue;
+		}
+	};
 
     void HeapProfiler::Initialize(Handle<ObjectTemplate> target) {
         HandleScope scope;
@@ -73,7 +64,12 @@ namespace nodex {
         int32_t index = args[0]->Int32Value();
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::GetSnapshot(index);
 
-        return scope.Close(Snapshot::New(snapshot));
+		Handle<Array> result = Array::New(0);
+		JSONOutputStream stream(result);
+
+		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
+
+        return scope.Close(result);
     }
 
     Handle<Value> HeapProfiler::FindSnapshot(const Arguments& args) {
@@ -85,37 +81,32 @@ namespace nodex {
         uint32_t uid = args[0]->Uint32Value();
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::FindSnapshot(uid);
 
-        return scope.Close(Snapshot::New(snapshot));
+		Handle<Array> result = Array::New(0);
+		JSONOutputStream stream(result);
+
+		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
+
+        return scope.Close(result);
     }
 
     Handle<Value> HeapProfiler::TakeSnapshot(const Arguments& args) {
         HandleScope scope;
         Local<String> title = String::New("");
-        uint32_t len = args.Length();
 
-        ActivityControlAdapter *control = NULL;
-
-        if (len == 1) {
-            if (args[0]->IsString()) {
-                title = args[0]->ToString();
-            } else if (args[0]->IsFunction()) {
-                //control = new ActivityControlAdapter(args[0]);
-            }
-        }
-
-        if (len == 2) {
+        if (args.Length() >= 1) {
             if (args[0]->IsString()) {
                 title = args[0]->ToString();
             }
-
-            if (args[1]->IsFunction()) {
-                //control = new ActivityControlAdapter(args[1]);
-            }
         }
 
-        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
+        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, NULL);
 
-        return scope.Close(Snapshot::New(snapshot));
+		Handle<Array> result = Array::New(0);
+		JSONOutputStream stream(result);
+
+		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
+
+        return scope.Close(result);
     }
 
     Handle<Value> HeapProfiler::DeleteAllSnapshots(const Arguments& args) {
