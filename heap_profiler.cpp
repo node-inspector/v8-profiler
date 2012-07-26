@@ -1,5 +1,5 @@
 #include "heap_profiler.h"
-#include "snapshot.h"
+#include "profiler.h"
 
 namespace nodex {
     Persistent<ObjectTemplate> HeapProfiler::heap_profiler_template_;
@@ -50,12 +50,14 @@ namespace nodex {
     HeapProfiler::~HeapProfiler() {}
 
     Handle<Value> HeapProfiler::GetSnapshotsCount(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         return scope.Close(Integer::New(v8::HeapProfiler::GetSnapshotsCount()));
     }
 
     Handle<Value> HeapProfiler::GetSnapshot(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         if (args.Length() < 1) {
             return ThrowException(Exception::Error(String::New("No index specified")));
         } else if (!args[0]->IsInt32()) {
@@ -73,8 +75,9 @@ namespace nodex {
     }
 
     Handle<Value> HeapProfiler::FindSnapshot(const Arguments& args) {
-        HandleScope scope;
-        if (args.Length() < 1) {
+		ENTER_ISOLATE
+
+		if (args.Length() < 1) {
             return ThrowException(Exception::Error(String::New("No uid specified")));
         }
 
@@ -90,7 +93,8 @@ namespace nodex {
     }
 
     Handle<Value> HeapProfiler::TakeSnapshot(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         Local<String> title = String::New("");
 
         if (args.Length() >= 1) {
@@ -110,7 +114,8 @@ namespace nodex {
     }
 
     Handle<Value> HeapProfiler::DeleteAllSnapshots(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         v8::HeapProfiler::DeleteAllSnapshots();
         return Undefined();
     }

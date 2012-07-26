@@ -1,5 +1,5 @@
 #include "cpu_profiler.h"
-#include "profile.h"
+#include "profiler.h"
 #include <cstdlib>
 
 namespace nodex {
@@ -81,12 +81,14 @@ namespace nodex {
     CpuProfiler::~CpuProfiler() {}
 
     Handle<Value> CpuProfiler::GetProfilesCount(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         return scope.Close(Integer::New(v8::CpuProfiler::GetProfilesCount()));
     }
 
     Handle<Value> CpuProfiler::GetProfile(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         if (args.Length() < 1) {
             return ThrowException(Exception::Error(String::New("No index specified")));
         } else if (!args[0]->IsInt32()) {
@@ -106,7 +108,8 @@ namespace nodex {
     }
 
     Handle<Value> CpuProfiler::FindProfile(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         if (args.Length() < 1) {
             return ThrowException(Exception::Error(String::New("No index specified")));
         } else if (!args[0]->IsInt32()) {
@@ -114,18 +117,28 @@ namespace nodex {
         }
         uint32_t uid = args[0]->Uint32Value();
         const CpuProfile* profile = v8::CpuProfiler::FindProfile(uid);
-        return scope.Close(Profile::New(profile));
+
+		Local<String> snapshot = String::New("");
+		parseTree(snapshot, profile->GetTopDownRoot());
+
+		Handle<Array> result = splitData(snapshot);
+		result->Set(String::New("title"), profile->GetTitle());
+		result->Set(String::New("uid"), Number::New(profile->GetUid()));
+
+        return scope.Close(result);
     }
 
     Handle<Value> CpuProfiler::StartProfiling(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
         v8::CpuProfiler::StartProfiling(title);
         return Undefined();
     }
 
     Handle<Value> CpuProfiler::StopProfiling(const Arguments& args) {
-        HandleScope scope;
+		ENTER_ISOLATE
+
         Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
         const CpuProfile* profile = v8::CpuProfiler::StopProfiling(title);
 
@@ -139,6 +152,8 @@ namespace nodex {
     }
 
 	Handle<Value> CpuProfiler::GetProfileHeaders(const Arguments& args) {
+		ENTER_ISOLATE
+
 		char desc[512];
 
 		int profilesCount = v8::CpuProfiler::GetProfilesCount();
@@ -161,6 +176,8 @@ namespace nodex {
 	}
 
     Handle<Value> CpuProfiler::DeleteAllProfiles(const Arguments& args) {
+		ENTER_ISOLATE
+
         v8::CpuProfiler::DeleteAllProfiles();
         return Undefined();
     }

@@ -22,7 +22,6 @@ namespace nodex {
             static Handle<Value> StartProfiling(const Arguments& args);
             static Handle<Value> StopProfiling(const Arguments& args);
             static Handle<Value> DeleteAllProfiles(const Arguments& args);
-
             static Handle<Value> GetProfileHeaders(const Arguments& args);
 
         private:
