@@ -65,13 +65,16 @@ namespace nodex {
         }
         int32_t index = args[0]->Int32Value();
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::GetSnapshot(index);
+		if (snapshot) {
+			Handle<Array> result = Array::New(0);
+			JSONOutputStream stream(result);
 
-		Handle<Array> result = Array::New(0);
-		JSONOutputStream stream(result);
+			snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
 
-		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
-
-        return scope.Close(result);
+			return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
     Handle<Value> HeapProfiler::FindSnapshot(const Arguments& args) {
@@ -83,13 +86,16 @@ namespace nodex {
 
         uint32_t uid = args[0]->Uint32Value();
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::FindSnapshot(uid);
+		if (snapshot) {
+			Handle<Array> result = Array::New(0);
+			JSONOutputStream stream(result);
 
-		Handle<Array> result = Array::New(0);
-		JSONOutputStream stream(result);
+			snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
 
-		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
-
-        return scope.Close(result);
+			return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
     Handle<Value> HeapProfiler::TakeSnapshot(const Arguments& args) {
@@ -104,13 +110,16 @@ namespace nodex {
         }
 
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, NULL);
+		if (snapshot) {
+			Handle<Array> result = Array::New(0);
+			JSONOutputStream stream(result);
 
-		Handle<Array> result = Array::New(0);
-		JSONOutputStream stream(result);
+			snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
 
-		snapshot->Serialize(&stream, v8::HeapSnapshot::kJSON);
-
-        return scope.Close(result);
+			return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
     Handle<Value> HeapProfiler::DeleteAllSnapshots(const Arguments& args) {

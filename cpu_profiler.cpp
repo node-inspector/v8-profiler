@@ -95,16 +95,24 @@ namespace nodex {
             return ThrowException(Exception::TypeError(String::New("Argument must be an integer")));
         }
         int32_t index = args[0]->Int32Value();
+
+		if (index >= v8::CpuProfiler::GetProfilesCount()) {
+			return Undefined();
+		}
+
         const CpuProfile* profile = v8::CpuProfiler::GetProfile(index);
+		if (profile) {
+			Local<String> snapshot = String::New("");
+			parseTree(snapshot, profile->GetTopDownRoot());
 
-		Local<String> snapshot = String::New("");
-		parseTree(snapshot, profile->GetTopDownRoot());
+			Handle<Array> result = splitData(snapshot);
+			result->Set(String::New("title"), profile->GetTitle());
+			result->Set(String::New("uid"), Number::New(profile->GetUid()));
 
-		Handle<Array> result = splitData(snapshot);
-		result->Set(String::New("title"), profile->GetTitle());
-		result->Set(String::New("uid"), Number::New(profile->GetUid()));
-
-        return scope.Close(result);
+			return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
     Handle<Value> CpuProfiler::FindProfile(const Arguments& args) {
@@ -117,15 +125,18 @@ namespace nodex {
         }
         uint32_t uid = args[0]->Uint32Value();
         const CpuProfile* profile = v8::CpuProfiler::FindProfile(uid);
+		if (profile) {
+			Local<String> snapshot = String::New("");
+			parseTree(snapshot, profile->GetTopDownRoot());
 
-		Local<String> snapshot = String::New("");
-		parseTree(snapshot, profile->GetTopDownRoot());
+			Handle<Array> result = splitData(snapshot);
+			result->Set(String::New("title"), profile->GetTitle());
+			result->Set(String::New("uid"), Number::New(profile->GetUid()));
 
-		Handle<Array> result = splitData(snapshot);
-		result->Set(String::New("title"), profile->GetTitle());
-		result->Set(String::New("uid"), Number::New(profile->GetUid()));
-
-        return scope.Close(result);
+			return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
     Handle<Value> CpuProfiler::StartProfiling(const Arguments& args) {
@@ -141,14 +152,17 @@ namespace nodex {
 
         Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
         const CpuProfile* profile = v8::CpuProfiler::StopProfiling(title);
+		if (profile) {
+			Local<String> snapshot = String::New("");
+			parseTree(snapshot, profile->GetTopDownRoot());
 
-		Local<String> snapshot = String::New("");
-		parseTree(snapshot, profile->GetTopDownRoot());
-
-		Handle<Array> result = splitData(snapshot);
-		result->Set(String::New("title"), profile->GetTitle());
-		result->Set(String::New("uid"), Number::New(profile->GetUid()));
-        return scope.Close(result);
+			Handle<Array> result = splitData(snapshot);
+			result->Set(String::New("title"), profile->GetTitle());
+			result->Set(String::New("uid"), Number::New(profile->GetUid()));
+    	    return scope.Close(result);
+		} else {
+			return Undefined();
+		}
     }
 
 	Handle<Value> CpuProfiler::GetProfileHeaders(const Arguments& args) {
