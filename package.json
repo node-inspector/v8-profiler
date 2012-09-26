@@ -1,10 +1,21 @@
 {
-    "name": "v8-profiler",
-    "version": "3.6.2-1",
-    "description": "node bindings for the v8 profiler",
-    "homepage": "http://github.com/dannycoates/v8-profiler",
-    "author": "Danny Coates <dannycoates@gmail.com>",
-    "keywords": ["profiler", "inspector"],
-    "engines" : { "node": ">=0.6" },
-    "main" : "v8-profiler"
+  "name": "v8-profiler",
+  "version": "3.6.2-1",
+  "description": "node bindings for the v8 profiler",
+  "homepage": "http://github.com/dannycoates/v8-profiler",
+  "author": {
+    "name": "Danny Coates",
+    "email": "dannycoates@gmail.com"
+  },
+  "keywords": [
+    "profiler",
+    "inspector"
+  ],
+  "engines": {
+    "node": ">=0.8.8"
+  },
+  "main": "v8-profiler",
+  "scripts": {
+    "install": "node-waf configure build"
+  }
 }
