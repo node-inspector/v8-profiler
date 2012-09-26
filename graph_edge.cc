@@ -4,7 +4,7 @@
 using namespace v8;
 
 namespace nodex {
-  
+
 Persistent<ObjectTemplate> GraphEdge::edge_template_;
 
 void GraphEdge::Initialize() {
@@ -21,29 +21,29 @@ Handle<Value> GraphEdge::GetType(Local<String> property, const AccessorInfo& inf
   Local<Object> self = info.Holder();
   void* ptr = self->GetPointerFromInternalField(0);
   int32_t type = static_cast<int32_t>(static_cast<HeapGraphEdge*>(ptr)->GetType());
+
   Local<String> t;
   switch(type) {
-    case 0: //HeapGraphEdge::kContextVariable :
-    t = String::New("ContextVariable");
-    break;
-    case 1: //HeapGraphEdge::kElement :
-    t = String::New("Element");
-    break;
-    case 2: //HeapGraphEdge::kProperty :
-    t = String::New("Property");
-    break;
-    case 3: //HeapGraphEdge::kInternal :
-    t = String::New("Internal");
-    break;
-    case 4: //HeapGraphEdge::kHidden :
-    t = String::New("Hidden");
-    break;
-    case 5: //HeapGraphEdge::kShortcut :
-    t = String::New("Shortcut");
-    break;
+    case HeapGraphEdge::kContextVariable :
+      t = String::New("ContextVariable");
+      break;
+    case HeapGraphEdge::kElement :
+      t = String::New("Element");
+      break;
+    case HeapGraphEdge::kProperty :
+      t = String::New("Property");
+      break;
+    case HeapGraphEdge::kInternal :
+      t = String::New("Internal");
+      break;
+    case HeapGraphEdge::kHidden :
+      t = String::New("Hidden");
+      break;
+    case HeapGraphEdge::kShortcut :
+      t = String::New("Shortcut");
+      break;
     default:
-    t = String::New("Unknown");
-    break;
+      t = String::New("Unknown");
   }
   return scope.Close(t);
 }
@@ -74,11 +74,11 @@ Handle<Value> GraphEdge::GetTo(Local<String> property, const AccessorInfo& info)
 
 Handle<Value> GraphEdge::New(const HeapGraphEdge* edge) {
   HandleScope scope;
-  
+
   if (edge_template_.IsEmpty()) {
     GraphEdge::Initialize();
   }
-  
+
   if(!edge) {
     return Undefined();
   }
@@ -88,4 +88,4 @@ Handle<Value> GraphEdge::New(const HeapGraphEdge* edge) {
     return scope.Close(obj);
   }
 }
-}
+} //namespace nodex
