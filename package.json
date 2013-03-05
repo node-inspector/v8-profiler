@@ -1,6 +1,6 @@
 {
   "name": "v8-profiler",
-  "version": "3.7.0",
+  "version": "4.0.0",
   "description": "node bindings for the v8 profiler",
   "homepage": "http://github.com/dannycoates/v8-profiler",
   "author": "Danny Coates <dannycoates@gmail.com>",
