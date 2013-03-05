@@ -4,7 +4,7 @@
 namespace nodex {
     Persistent<ObjectTemplate> HeapProfiler::heap_profiler_template_;
 
-    class ActivityControlAdapter : public v8::ActivityControl {
+    class ActivityControlAdapter : public ActivityControl {
         public:
             ActivityControlAdapter(Handle<Value> progress)
                 :   reportProgress(Handle<Function>::Cast(progress)),

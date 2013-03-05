@@ -14,7 +14,7 @@ Snapshot.prototype.compare = function (other) {
     diff[k] = their_val - my_val;
   }
   return diff;
-}
+};
 
 Snapshot.prototype.hotPath = function() {
   var path = [], node = this.root, c, i = 0;
@@ -26,7 +26,7 @@ Snapshot.prototype.hotPath = function() {
     i++;
   }
   return path;
-}
+};
 
 Snapshot.prototype.children = function(node) {
   var i, children = [];
@@ -37,7 +37,7 @@ Snapshot.prototype.children = function(node) {
     return b.to.retainedSize() - a.to.retainedSize();
   });
   return children;
-}
+};
 
 Snapshot.prototype.topDominatorIds = function() {
   var doms = {}, arr;
@@ -57,14 +57,14 @@ Snapshot.prototype.topDominatorIds = function() {
     return b.count - a.count;
   });
   return arr;
-}
+};
 
 Snapshot.prototype.topDominators = function() {
   var self = this;
   return this.topDominatorIds().map(function(d){
     return self.getNodeById(+d.id);
   });
-}
+};
 
 Snapshot.prototype.allNodes = function() {
   var n = this.nodesCount, i, nodes = [];
@@ -72,7 +72,7 @@ Snapshot.prototype.allNodes = function() {
     nodes[i] = this.getNode(i);
   }
   return nodes;
-}
+};
 
 Snapshot.prototype.nodeCounts = function() {
   var objects = {};
@@ -95,7 +95,7 @@ Snapshot.prototype.nodeCounts = function() {
     }
   });
   return objects;
-}
+};
 
 //adapted from WebCore/bindings/v8/ScriptHeapSnapshot.cpp
 Snapshot.prototype.stringify = function() {
@@ -130,7 +130,7 @@ Snapshot.prototype.stringify = function() {
         entry[child.ptr.toString()] = {
           constructorName: child.name,
           count: parseInt(edge.name, 10)
-        }
+        };
       }
       children[node.ptr.toString()] = entry;
     }//*/
@@ -139,7 +139,7 @@ Snapshot.prototype.stringify = function() {
   result.entries = entries;
   result.children = children;
   return JSON.stringify(result);
-}
+};
 
 function CpuProfile() {}
 
@@ -186,26 +186,26 @@ exports.takeSnapshot = function(name, control) {
   var snapshot = binding.heapProfiler.takeSnapshot(name, control);
   snapshot.__proto__ = Snapshot.prototype;
   heapCache.push(snapshot);
-  
+
   return snapshot;
-}
+};
 
 exports.getSnapshot = function(index) {
   return heapCache[index];
-}
+};
 
 exports.findSnapshot = function(uid) {
   return heapCache.filter(function(s) {return s.uid === uid;})[0];
-}
+};
 
 exports.snapshotCount = function() {
   return heapCache.length;
-}
+};
 
 exports.deleteAllSnapshots = function () {
 	heapCache = [];
 	binding.heapProfiler.deleteAllSnapshots();
-}
+};
 
 var cpuCache = [];
 
@@ -215,7 +215,7 @@ exports.startProfiling = function(name) {
   }
 
   binding.cpuProfiler.startProfiling(name);
-}
+};
 
 exports.stopProfiling = function(name) {
   name = name ? name : '';
@@ -223,23 +223,23 @@ exports.stopProfiling = function(name) {
   profile.__proto__ = CpuProfile.prototype;
   cpuCache.push(profile);
   return profile;
-}
+};
 
 exports.getProfile = function(index) {
   return cpuCache[index];
-}
+};
 
 exports.findProfile = function(uid) {
   return cpuCache.filter(function(s) {return s.uid === uid;})[0];
-}
+};
 
 exports.profileCount = function() {
   return cpuCache.length;
-}
+};
 
 exports.deleteAllProfiles = function() {
-	cpuCache = [];
-	binding.cpuProfiler.deleteAllProfiles();
-}
+  cpuCache = [];
+  binding.cpuProfiler.deleteAllProfiles();
+};
 
 process.profiler = exports;

@@ -21,6 +21,7 @@ class Snapshot {
 
     static Handle<Value> GetUid(Local<String> property, const AccessorInfo& info);
     static Handle<Value> GetTitle(Local<String> property, const AccessorInfo& info);
+    static Handle<Value> GetMaxSnapshotJSObjectId(Local<String> property, const AccessorInfo& info);
     static Handle<Value> GetRoot(Local<String> property, const AccessorInfo& info);
     static Handle<Value> GetType(Local<String> property, const AccessorInfo& info);
     static Handle<Value> GetNodesCount(Local<String> property, const AccessorInfo& info);
@@ -28,6 +29,8 @@ class Snapshot {
     static Handle<Value> GetNode(const Arguments& args);
     static Handle<Value> Delete(const Arguments& args);
     static Handle<Value> Serialize(const Arguments& args);
+
+    static Handle<Value> SnapshotObjectId(const Arguments& args);
 
     static void Initialize();
     static Persistent<ObjectTemplate> snapshot_template_;
