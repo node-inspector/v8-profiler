@@ -56,7 +56,7 @@ function inspectorObjectFor(node) {
         lineNumber: node.lineNumber,
         totalTime: node.totalTime,
         selfTime: node.selfTime,
-        numberOfCalls: 0,
+        numberOfCalls: node.selfSamplesCount,
         visible: true,
         callUID: node.callUid,
         children: []
