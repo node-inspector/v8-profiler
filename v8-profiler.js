@@ -24,7 +24,7 @@ Snapshot.prototype.stringify = function() {
       };
     }
     // FIXME: the children portion is too slow and bloats the results
-    /*
+    
     else {
       entry = {
         constructorName: node.name
@@ -38,7 +38,7 @@ Snapshot.prototype.stringify = function() {
         }
       }
       children[node.ptr.toString()] = entry;
-    }//*/
+    }
   }
   result.lowlevels = lowLevels;
   result.entries = entries;
