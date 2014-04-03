@@ -4,6 +4,10 @@
   "description": "node bindings for the v8 profiler",
   "homepage": "http://github.com/dannycoates/v8-profiler",
   "author": "Danny Coates <dannycoates@gmail.com>",
+  "license": {
+    "name": "BSD",
+    "url": "https://github.com/node-inspector/v8-profiler/blob/master/LICENSE"
+  },
   "keywords": [
     "profiler",
     "inspector"
