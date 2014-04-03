@@ -1,9 +1,6 @@
-
-
 #ifndef NODE_PROFILE_
 #define NODE_PROFILE_
 
-#include <v8.h>
 #include <v8-profiler.h>
 
 using namespace v8;
@@ -19,9 +16,10 @@ class Profile {
   static Handle<Value> GetTitle(Local<String> property, const AccessorInfo& info);
   static Handle<Value> GetTopRoot(Local<String> property, const AccessorInfo& info);
   static Handle<Value> GetBottomRoot(Local<String> property, const AccessorInfo& info);
+  static Handle<Value> Delete(const Arguments& args);
   static void Initialize();
   static Persistent<ObjectTemplate> profile_template_;
 };
 
-}
+} //namespace nodex
 #endif  // NODE_PROFILE_

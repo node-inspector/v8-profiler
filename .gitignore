@@ -1,2 +1,6 @@
+/profiler.node
 build/*
 .lock-wscript
+*.swp
+*.swo
+.DS_Store

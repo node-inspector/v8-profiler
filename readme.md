@@ -3,18 +3,18 @@ profiler and integration with [node-inspector](http://github.com/dannycoates/nod
 
 ## Installation
 
-		npm install v8-profiler
+    npm install v8-profiler
 
 ## Usage
 
-		var profiler = require('v8-profiler');
+    var profiler = require('v8-profiler');
 
 ## API
 
-		var snapshot = profiler.takeSnapshot([name])      //takes a heap snapshot
-		
-		profiler.startProfiling([name])                   //begin cpu profiling
-		var cpuProfile = profiler.stopProfiling([name])   //finish cpu profiling
+    var snapshot = profiler.takeSnapshot([name])      //takes a heap snapshot
+
+    profiler.startProfiling([name])                   //begin cpu profiling
+    var cpuProfile = profiler.stopProfiling([name])   //finish cpu profiling
 
 ## node-inspector
 
