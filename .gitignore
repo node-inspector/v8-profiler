@@ -1,5 +1,6 @@
 /profiler.node
 build/*
+node_modules/*
 .lock-wscript
 *.swp
 *.swo
