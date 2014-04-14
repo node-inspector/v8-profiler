@@ -1,8 +1,8 @@
 #ifndef NODE_CPU_PROFILER_
 #define NODE_CPU_PROFILER_
 
-#include <v8-profiler.h>
 #include <node.h>
+#include <v8-profiler.h>
 
 using namespace v8;
 using namespace node;
