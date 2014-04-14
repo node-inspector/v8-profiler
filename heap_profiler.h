@@ -1,8 +1,8 @@
 #ifndef NODE_HEAP_PROFILER_
 #define NODE_HEAP_PROFILER_
 
-#include <v8-profiler.h>
 #include <node.h>
+#include <v8-profiler.h>
 
 using namespace v8;
 using namespace node;

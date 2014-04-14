@@ -3,6 +3,7 @@
 #ifndef NODE_SNAPSHOT_
 #define NODE_SNAPSHOT_
 
+#include <node.h>
 #include <v8-profiler.h>
 
 using namespace v8;

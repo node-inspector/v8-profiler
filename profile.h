@@ -1,6 +1,7 @@
 #ifndef NODE_PROFILE_
 #define NODE_PROFILE_
 
+#include <node.h>
 #include <v8-profiler.h>
 
 using namespace v8;
