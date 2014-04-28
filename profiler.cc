@@ -3,7 +3,7 @@
 
 namespace nodex {
   void InitializeProfiler(Handle<Object> target) {
-    HandleScope scope;
+    NanScope();
     HeapProfiler::Initialize(target);
     CpuProfiler::Initialize(target);
   }

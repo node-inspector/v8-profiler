@@ -10,35 +10,39 @@ namespace nodex {
 Persistent<ObjectTemplate> Snapshot::snapshot_template_;
 
 void Snapshot::Initialize() {
-  snapshot_template_ = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
-  snapshot_template_->SetInternalFieldCount(1);
-  snapshot_template_->SetAccessor(String::New("title"), Snapshot::GetTitle);
-  snapshot_template_->SetAccessor(String::New("uid"), Snapshot::GetUid);
-  snapshot_template_->SetAccessor(String::New("type"), Snapshot::GetType);
-  snapshot_template_->Set(String::New("delete"), FunctionTemplate::New(Snapshot::Delete));
-  snapshot_template_->Set(String::New("serialize"), FunctionTemplate::New(Snapshot::Serialize));
+  Local<ObjectTemplate> tpl = NanNewLocal<ObjectTemplate>(ObjectTemplate::New());
+  NanAssignPersistent(ObjectTemplate, snapshot_template_, tpl);
+  tpl->SetInternalFieldCount(1);
+  tpl->SetAccessor(String::New("title"), Snapshot::GetTitle);
+  tpl->SetAccessor(String::New("uid"), Snapshot::GetUid);
+  tpl->SetAccessor(String::New("type"), Snapshot::GetType);
+  tpl->Set(String::New("delete"), FunctionTemplate::New(Snapshot::Delete));
+  tpl->Set(String::New("serialize"), FunctionTemplate::New(Snapshot::Serialize));
 }
 
-Handle<Value> Snapshot::GetTitle(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  Local<Object> self = info.Holder();
-  void* ptr = self->GetPointerFromInternalField(0);
+NAN_GETTER(Snapshot::GetTitle) {
+  NanScope();
+  Local<Object> self = args.Holder();
+  void* ptr = NanGetInternalFieldPointer(self, 0);
   Handle<String> title = static_cast<HeapSnapshot*>(ptr)->GetTitle();
-  return scope.Close(title);
+  NanReturnValue(title);
 }
 
-Handle<Value> Snapshot::GetUid(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  Local<Object> self = info.Holder();
-  void* ptr = self->GetPointerFromInternalField(0);
+NAN_GETTER(Snapshot::GetUid) {
+  NanScope();
+  Local<Object> self = args.Holder();
+  void* ptr = NanGetInternalFieldPointer(self, 0);
   uint32_t uid = static_cast<HeapSnapshot*>(ptr)->GetUid();
-  return scope.Close(Integer::NewFromUnsigned(uid));
+  NanReturnValue(Integer::NewFromUnsigned(uid));
 }
 
-Handle<Value> Snapshot::GetType(Local<String> property, const AccessorInfo& info) {
-  HandleScope scope;
-  Local<Object> self = info.Holder();
-  void* ptr = self->GetPointerFromInternalField(0);
+NAN_GETTER(Snapshot::GetType) {
+  NanScope();
+#if (NODE_MODULE_VERSION > 0x000B)
+  NanReturnValue(String::New("Unknown"));
+#else
+  Local<Object> self = args.Holder();
+  void* ptr = NanGetInternalFieldPointer(self, 0);
 
   HeapSnapshot::Type type = static_cast<HeapSnapshot*>(ptr)->GetType();
   Local<String> t;
@@ -51,19 +55,20 @@ Handle<Value> Snapshot::GetType(Local<String> property, const AccessorInfo& info
       t = String::New("Unknown");
   }
 
-  return scope.Close(t);
+  NanReturnValue(t);
+#endif
 }
 
-Handle<Value> Snapshot::Delete(const Arguments& args) {
-    HandleScope scope;
-    Handle<Object> self = args.This();
-    void* ptr = self->GetPointerFromInternalField(0);
-    static_cast<HeapSnapshot*>(ptr)->Delete();
-    return Undefined();
+NAN_METHOD(Snapshot::Delete) {
+  NanScope();
+  Handle<Object> self = args.This();
+  void* ptr = NanGetInternalFieldPointer(self, 0);
+  static_cast<HeapSnapshot*>(ptr)->Delete();
+  NanReturnUndefined();
 }
 
 Handle<Value> Snapshot::New(const HeapSnapshot* snapshot) {
-  HandleScope scope;
+  NanScope();
 
   if (snapshot_template_.IsEmpty()) {
     Snapshot::Initialize();
@@ -73,9 +78,9 @@ Handle<Value> Snapshot::New(const HeapSnapshot* snapshot) {
     return Undefined();
   }
   else {
-    Local<Object> obj = snapshot_template_->NewInstance();
-    obj->SetPointerInInternalField(0, const_cast<HeapSnapshot*>(snapshot));
-    return scope.Close(obj);
+    Local<Object> obj = NanPersistentToLocal(snapshot_template_)->NewInstance();
+    NanSetInternalFieldPointer(obj, 0, const_cast<HeapSnapshot*>(snapshot));
+    return obj;
   }
 }
 
@@ -104,7 +109,7 @@ class OutputStreamAdapter : public v8::OutputStream {
       onEndFunction = Local<Function>::Cast(obj->Get(onEnd));
       onDataFunction = Local<Function>::Cast(obj->Get(onData));
 
-      abort = Local<Value>::New(Boolean::New(false));
+      abort = NanNewLocal(Boolean::New(false));
     }
 
     void EndOfStream() {
@@ -121,10 +126,10 @@ class OutputStreamAdapter : public v8::OutputStream {
     }
 
     WriteResult WriteAsciiChunk(char* data, int size) {
-      HandleScope scope;
+      NanScope();
 
       Handle<Value> argv[2] = {
-        Buffer::New(data, size)->handle_,
+        NanNewBufferHandle(data, size),
         Integer::New(size)
       };
 
@@ -150,23 +155,22 @@ class OutputStreamAdapter : public v8::OutputStream {
     Handle<Function> onDataFunction;
 };
 
-Handle<Value> Snapshot::Serialize(const Arguments& args) {
-  HandleScope scope;
+NAN_METHOD(Snapshot::Serialize) {
+  NanScope();
   Handle<Object> self = args.This();
 
   uint32_t argslen = args.Length();
 
   if (argslen == 0) {
-    return ThrowException(Exception::TypeError(
-      String::New("You must specify arguments to invoke this function")));
+    return NanThrowError("You must specify arguments to invoke this function");
   }
 
   OutputStreamAdapter *stream = new OutputStreamAdapter(args[0]);
 
-  void* ptr = self->GetPointerFromInternalField(0);
+  void* ptr = NanGetInternalFieldPointer(self, 0);
   static_cast<HeapSnapshot*>(ptr)->Serialize(stream, HeapSnapshot::kJSON);
 
-  return Undefined();
+  NanReturnUndefined();
 }
 
 } //namespace nodex

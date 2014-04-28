@@ -3,6 +3,7 @@
 
 #include <node.h>
 #include <v8-profiler.h>
+#include "nan.h"
 
 using namespace v8;
 using namespace node;
@@ -16,12 +17,12 @@ namespace nodex {
             virtual ~CpuProfiler();
 
         protected:
-            static Handle<Value> GetProfilesCount(const Arguments& args);
-            static Handle<Value> GetProfile(const Arguments& args);
-            static Handle<Value> FindProfile(const Arguments& args);
-            static Handle<Value> StartProfiling(const Arguments& args);
-            static Handle<Value> StopProfiling(const Arguments& args);
-            static Handle<Value> DeleteAllProfiles(const Arguments& args);
+            static NAN_METHOD(GetProfilesCount);
+            static NAN_METHOD(GetProfile);
+            static NAN_METHOD(FindProfile);
+            static NAN_METHOD(StartProfiling);
+            static NAN_METHOD(StopProfiling);
+            static NAN_METHOD(DeleteAllProfiles);
 
         private:
             static Persistent<ObjectTemplate> cpu_profiler_template_;

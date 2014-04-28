@@ -3,6 +3,7 @@
 
 #include <node.h>
 #include <v8-profiler.h>
+#include "nan.h"
 
 using namespace v8;
 
@@ -13,11 +14,11 @@ class Profile {
   static Handle<Value> New(const CpuProfile* profile);
  
  private:
-  static Handle<Value> GetUid(Local<String> property, const AccessorInfo& info);
-  static Handle<Value> GetTitle(Local<String> property, const AccessorInfo& info);
-  static Handle<Value> GetTopRoot(Local<String> property, const AccessorInfo& info);
-  static Handle<Value> GetBottomRoot(Local<String> property, const AccessorInfo& info);
-  static Handle<Value> Delete(const Arguments& args);
+  static NAN_GETTER(GetUid);
+  static NAN_GETTER(GetTitle);
+  static NAN_GETTER(GetTopRoot);
+  static NAN_GETTER(GetBottomRoot);
+  static NAN_METHOD(Delete);
   static void Initialize();
   static Persistent<ObjectTemplate> profile_template_;
 };

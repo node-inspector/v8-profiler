@@ -8,10 +8,10 @@ namespace nodex {
         public:
             ActivityControlAdapter(Handle<Value> progress)
                 :   reportProgress(Handle<Function>::Cast(progress)),
-                    abort(Local<Value>::New(Boolean::New(false))) {}
+                    abort(NanNewLocal<Value>(Boolean::New(false))) {}
 
             ControlOption ReportProgressValue(int done, int total) {
-                HandleScope scope;
+                NanScope();
 
                 Local<Value> argv[2] = {
                     Integer::New(done),
@@ -42,12 +42,13 @@ namespace nodex {
     };
 
     void HeapProfiler::Initialize(Handle<Object> target) {
-        HandleScope scope;
+        NanScope();
 
-        heap_profiler_template_ = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
-        heap_profiler_template_->SetInternalFieldCount(1);
+        Local<ObjectTemplate> tpl = NanNewLocal<ObjectTemplate>(ObjectTemplate::New());
+        NanAssignPersistent(ObjectTemplate, heap_profiler_template_, tpl);
+        tpl->SetInternalFieldCount(1);
 
-        Local<Object> heapProfilerObj = heap_profiler_template_->NewInstance();
+        Local<Object> heapProfilerObj = tpl->NewInstance();
 
         NODE_SET_METHOD(heapProfilerObj, "takeSnapshot", HeapProfiler::TakeSnapshot);
         NODE_SET_METHOD(heapProfilerObj, "getSnapshot", HeapProfiler::GetSnapshot);
@@ -61,38 +62,62 @@ namespace nodex {
     HeapProfiler::HeapProfiler() {}
     HeapProfiler::~HeapProfiler() {}
 
-    Handle<Value> HeapProfiler::GetSnapshotsCount(const Arguments& args) {
-        HandleScope scope;
-        return scope.Close(Integer::New(v8::HeapProfiler::GetSnapshotsCount()));
+    NAN_METHOD(HeapProfiler::GetSnapshotsCount) {
+        NanScope();
+#if (NODE_MODULE_VERSION > 0x000B)
+        NanReturnValue(Integer::New(nan_isolate->GetHeapProfiler()->GetSnapshotCount()));
+#else
+        NanReturnValue(Integer::New(v8::HeapProfiler::GetSnapshotsCount()));
+#endif
     }
 
-    Handle<Value> HeapProfiler::GetSnapshot(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(HeapProfiler::GetSnapshot) {
+        NanScope();
         if (args.Length() < 1) {
-            return ThrowException(Exception::Error(String::New("No index specified")));
+            return NanThrowError("No index specified");
         } else if (!args[0]->IsInt32()) {
-            return ThrowException(Exception::TypeError(String::New("Argument must be an integer")));
+            return NanThrowError("Argument must be an integer");
         }
         int32_t index = args[0]->Int32Value();
+#if (NODE_MODULE_VERSION > 0x000B)
+        const v8::HeapSnapshot* snapshot = nan_isolate->GetHeapProfiler()->GetHeapSnapshot(index);
+#else
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::GetSnapshot(index);
-
-        return scope.Close(Snapshot::New(snapshot));
+#endif
+        NanReturnValue(Snapshot::New(snapshot));
     }
 
-    Handle<Value> HeapProfiler::FindSnapshot(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(HeapProfiler::FindSnapshot) {
+        NanScope();
         if (args.Length() < 1) {
-            return ThrowException(Exception::Error(String::New("No uid specified")));
+            return NanThrowError("No index specified");
+        } else if (!args[0]->IsInt32()) {
+            return NanThrowError("Argument must be an integer");
         }
-
         uint32_t uid = args[0]->Uint32Value();
-        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::FindSnapshot(uid);
+        const v8::HeapSnapshot* snapshot;
 
-        return scope.Close(Snapshot::New(snapshot));
+#if (NODE_MODULE_VERSION > 0x000B)
+        bool notFound = true;
+        int count = nan_isolate->GetHeapProfiler()->GetSnapshotCount();
+        for (int32_t index = 1; index < count; index++) {
+            snapshot = nan_isolate->GetHeapProfiler()->GetHeapSnapshot(index);
+            if (snapshot->GetUid() == uid) {
+                notFound = false;
+                break;
+            }
+        }
+        if (notFound) {
+            NanReturnNull();
+        }
+#else
+        snapshot = v8::HeapProfiler::FindSnapshot(uid);
+#endif
+        NanReturnValue(Snapshot::New(snapshot));
     }
 
-    Handle<Value> HeapProfiler::TakeSnapshot(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(HeapProfiler::TakeSnapshot) {
+        NanScope();
         Local<String> title = String::New("");
         uint32_t len = args.Length();
 
@@ -116,14 +141,22 @@ namespace nodex {
             }
         }
 
+#if (NODE_MODULE_VERSION > 0x000B)
+        const v8::HeapSnapshot* snapshot = nan_isolate->GetHeapProfiler()->TakeHeapSnapshot(title, control);
+#else
         const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
+#endif
 
-        return scope.Close(Snapshot::New(snapshot));
+        NanReturnValue(Snapshot::New(snapshot));
     }
 
-    Handle<Value> HeapProfiler::DeleteAllSnapshots(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(HeapProfiler::DeleteAllSnapshots) {
+        NanScope();
+#if (NODE_MODULE_VERSION > 0x000B)
+        nan_isolate->GetHeapProfiler()->DeleteAllHeapSnapshots();
+#else
         v8::HeapProfiler::DeleteAllSnapshots();
-        return Undefined();
+#endif
+        NanReturnUndefined();
     }
 } //namespace nodex
