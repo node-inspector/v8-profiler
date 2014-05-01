@@ -5,12 +5,13 @@ namespace nodex {
     Persistent<ObjectTemplate> CpuProfiler::cpu_profiler_template_;
 
     void CpuProfiler::Initialize(Handle<Object> target) {
-        HandleScope scope;
+        NanScope();
 
-        cpu_profiler_template_ = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
-        cpu_profiler_template_->SetInternalFieldCount(1);
+        Local<ObjectTemplate> tpl = NanNewLocal<ObjectTemplate>(ObjectTemplate::New());
+        NanAssignPersistent(ObjectTemplate, cpu_profiler_template_, tpl);
+        tpl->SetInternalFieldCount(1);
 
-        Local<Object> cpuProfilerObj = cpu_profiler_template_->NewInstance();
+        Local<Object> cpuProfilerObj = tpl->NewInstance();
 
         NODE_SET_METHOD(cpuProfilerObj, "getProfilesCount", CpuProfiler::GetProfilesCount);
         NODE_SET_METHOD(cpuProfilerObj, "getProfile", CpuProfiler::GetProfile);
@@ -25,51 +26,89 @@ namespace nodex {
     CpuProfiler::CpuProfiler() {}
     CpuProfiler::~CpuProfiler() {}
 
-    Handle<Value> CpuProfiler::GetProfilesCount(const Arguments& args) {
-        HandleScope scope;
-        return scope.Close(Integer::New(v8::CpuProfiler::GetProfilesCount()));
+    NAN_METHOD(CpuProfiler::GetProfilesCount) {
+        NanScope();
+#if (NODE_MODULE_VERSION > 0x000B)
+        int ret = nan_isolate->GetCpuProfiler()->GetProfileCount();
+#else
+        int ret = v8::CpuProfiler::GetProfilesCount();
+#endif
+        NanReturnValue(Integer::New(ret));
     }
 
-    Handle<Value> CpuProfiler::GetProfile(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(CpuProfiler::GetProfile) {
+        NanScope();
         if (args.Length() < 1) {
-            return ThrowException(Exception::Error(String::New("No index specified")));
+            return NanThrowError("No index specified");
         } else if (!args[0]->IsInt32()) {
-            return ThrowException(Exception::TypeError(String::New("Argument must be an integer")));
+            return NanThrowError("Argument must be an integer");
         }
         int32_t index = args[0]->Int32Value();
+#if (NODE_MODULE_VERSION > 0x000B)
+        const CpuProfile* profile = nan_isolate->GetCpuProfiler()->GetCpuProfile(index);
+#else
         const CpuProfile* profile = v8::CpuProfiler::GetProfile(index);
-        return scope.Close(Profile::New(profile));
+#endif
+        NanReturnValue(Profile::New(profile));
     }
 
-    Handle<Value> CpuProfiler::FindProfile(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(CpuProfiler::FindProfile) {
+        NanScope();
         if (args.Length() < 1) {
-            return ThrowException(Exception::Error(String::New("No index specified")));
+            return NanThrowError("No index specified");
         } else if (!args[0]->IsInt32()) {
-            return ThrowException(Exception::TypeError(String::New("Argument must be an integer")));
+            return NanThrowError("Argument must be an integer");
         }
         uint32_t uid = args[0]->Uint32Value();
-        const CpuProfile* profile = v8::CpuProfiler::FindProfile(uid);
-        return scope.Close(Profile::New(profile));
+        const CpuProfile* profile;
+
+#if (NODE_MODULE_VERSION > 0x000B)
+        bool notFound = true;
+        int count = nan_isolate->GetCpuProfiler()->GetProfileCount();
+        for (int32_t index = 1; index < count; index++) {
+            profile = nan_isolate->GetCpuProfiler()->GetCpuProfile(index);
+            if (profile->GetUid() == uid) {
+                notFound = false;
+                break;
+            }
+        }
+        if (notFound) {
+            NanReturnNull();
+        }
+#else
+        profile = v8::CpuProfiler::FindProfile(uid);
+#endif
+        NanReturnValue(Profile::New(profile));
     }
 
-    Handle<Value> CpuProfiler::StartProfiling(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(CpuProfiler::StartProfiling) {
+        NanScope();
         Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
+#if (NODE_MODULE_VERSION > 0x000B)
+        nan_isolate->GetCpuProfiler()->StartCpuProfiling(title);
+#else
         v8::CpuProfiler::StartProfiling(title);
-        return Undefined();
+#endif
+        NanReturnUndefined();
     }
 
-    Handle<Value> CpuProfiler::StopProfiling(const Arguments& args) {
-        HandleScope scope;
+    NAN_METHOD(CpuProfiler::StopProfiling) {
+        NanScope();
         Local<String> title = args.Length() > 0 ? args[0]->ToString() : String::New("");
+#if (NODE_MODULE_VERSION > 0x000B)
+        const CpuProfile* profile = nan_isolate->GetCpuProfiler()->StopCpuProfiling(title);
+#else
         const CpuProfile* profile = v8::CpuProfiler::StopProfiling(title);
-        return scope.Close(Profile::New(profile));
+#endif
+        NanReturnValue(Profile::New(profile));
     }
 
-    Handle<Value> CpuProfiler::DeleteAllProfiles(const Arguments& args) {
+    NAN_METHOD(CpuProfiler::DeleteAllProfiles) {
+#if (NODE_MODULE_VERSION > 0x000B)
+        nan_isolate->GetCpuProfiler()->DeleteAllCpuProfiles();
+#else
         v8::CpuProfiler::DeleteAllProfiles();
-        return Undefined();
+#endif
+        NanReturnUndefined();
     }
 } //namespace nodex

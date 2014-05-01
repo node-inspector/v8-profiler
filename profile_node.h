@@ -5,6 +5,7 @@
 
 #include <node.h>
 #include <v8-profiler.h>
+#include "nan.h"
 
 using namespace v8;
 
@@ -15,16 +16,16 @@ class ProfileNode {
    static Handle<Value> New(const CpuProfileNode* node);
 
  private:
-   static Handle<Value> GetFunctionName(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetScriptName(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetLineNumber(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetTotalTime(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetSelfTime(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetTotalSamplesCount(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetSelfSamplesCount(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetCallUid(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetChildrenCount(Local<String> property, const AccessorInfo& info);
-   static Handle<Value> GetChild(const Arguments& args);
+   static NAN_GETTER(GetFunctionName);
+   static NAN_GETTER(GetScriptName);
+   static NAN_GETTER(GetLineNumber);
+   static NAN_GETTER(GetTotalTime);
+   static NAN_GETTER(GetSelfTime);
+   static NAN_GETTER(GetTotalSamplesCount);
+   static NAN_GETTER(GetSelfSamplesCount);
+   static NAN_GETTER(GetCallUid);
+   static NAN_GETTER(GetChildrenCount);
+   static NAN_METHOD(GetChild);
    static void Initialize();
    static Persistent<ObjectTemplate> node_template_;
 };

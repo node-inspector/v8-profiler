@@ -3,6 +3,7 @@
 
 #include <node.h>
 #include <v8-profiler.h>
+#include "nan.h"
 
 using namespace v8;
 using namespace node;
@@ -16,11 +17,11 @@ namespace nodex {
             virtual ~HeapProfiler();
 
         protected:
-            static Handle<Value> GetSnapshotsCount(const Arguments& args);
-            static Handle<Value> GetSnapshot(const Arguments& args);
-            static Handle<Value> FindSnapshot(const Arguments& args);
-            static Handle<Value> TakeSnapshot(const Arguments& args);
-            static Handle<Value> DeleteAllSnapshots(const Arguments& args);
+            static NAN_METHOD(GetSnapshotsCount);
+            static NAN_METHOD(GetSnapshot);
+            static NAN_METHOD(FindSnapshot);
+            static NAN_METHOD(TakeSnapshot);
+            static NAN_METHOD(DeleteAllSnapshots);
 
         private:
             static Persistent<ObjectTemplate> heap_profiler_template_;

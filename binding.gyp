@@ -10,6 +10,9 @@
         'profiler.cc',
         'snapshot.cc',
       ],
+      'include_dirs' : [
+        "<!(node -e \"require('nan')\")"
+      ],
     }
   ]
 }
