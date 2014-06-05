@@ -16,9 +16,6 @@
     "node": ">=0.6"
   },
   "main": "v8-profiler",
-  "scripts": {
-    "postinstall": "ln -sf build/Release/profiler.node profiler.node"
-  },
   "dependencies": {
     "nan": "~1.2.0"
   }
