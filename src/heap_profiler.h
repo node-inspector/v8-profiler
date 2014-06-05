@@ -1,30 +1,23 @@
 #ifndef NODE_HEAP_PROFILER_
 #define NODE_HEAP_PROFILER_
 
-#include <node.h>
-#include <v8-profiler.h>
+#include "v8-profiler.h"
+#include "node.h"
 #include "nan.h"
 
-using namespace v8;
-using namespace node;
-
 namespace nodex {
-    class HeapProfiler {
-        public:
-            static void Initialize(Handle<Object> target);
+  class HeapProfiler {
+    public:
+      static void Initialize(v8::Handle<v8::Object> target);
 
-            HeapProfiler();
-            virtual ~HeapProfiler();
+      HeapProfiler();
+      virtual ~HeapProfiler();
 
-        protected:
-            static NAN_METHOD(GetSnapshotsCount);
-            static NAN_METHOD(GetSnapshot);
-            static NAN_METHOD(FindSnapshot);
-            static NAN_METHOD(TakeSnapshot);
-            static NAN_METHOD(DeleteAllSnapshots);
-
-        private:
-            static Persistent<ObjectTemplate> heap_profiler_template_;
+    protected:
+      static NAN_METHOD(TakeSnapshot);
+      static NAN_METHOD(StartTrackingHeapObjects);
+      static NAN_METHOD(StopTrackingHeapObjects);
+      static NAN_METHOD(GetHeapStats);
     };
 } //namespace nodex
 

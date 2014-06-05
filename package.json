@@ -20,6 +20,6 @@
     "postinstall": "ln -sf build/Release/profiler.node profiler.node"
   },
   "dependencies": {
-    "nan": "~0.8.0"
+    "nan": "~1.2.0"
   }
 }

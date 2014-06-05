@@ -1,162 +1,147 @@
 #include "heap_profiler.h"
-#include "snapshot.h"
+#include "heap_snapshot.h"
+#include "heap_output_stream.h"
 
 namespace nodex {
-    Persistent<ObjectTemplate> HeapProfiler::heap_profiler_template_;
+  using v8::ActivityControl;
+  using v8::Array;
+  using v8::Function;
+  using v8::Handle;
+  using v8::HeapSnapshot;
+  using v8::Integer;
+  using v8::Local;
+  using v8::Object;
+  using v8::SnapshotObjectId;
+  using v8::String;
+  using v8::TryCatch;
+  using v8::Value;
 
-    class ActivityControlAdapter : public ActivityControl {
-        public:
-            ActivityControlAdapter(Handle<Value> progress)
-                :   reportProgress(Handle<Function>::Cast(progress)),
-                    abort(NanNewLocal<Value>(Boolean::New(false))) {}
+  HeapProfiler::HeapProfiler() {}
+  HeapProfiler::~HeapProfiler() {}
+  
+  class ActivityControlAdapter : public ActivityControl {
+    public:
+      ActivityControlAdapter(Handle<Value> progress)
+        : reportProgress(Handle<Function>::Cast(progress)),
+          abort(NanFalse()) 
+      {}
 
-            ControlOption ReportProgressValue(int done, int total) {
-                NanScope();
+      ControlOption ReportProgressValue(int done, int total) {
+        Local<Value> argv[2] = {
+          NanNew<Integer>(done),
+          NanNew<Integer>(total)
+        };
 
-                Local<Value> argv[2] = {
-                    Integer::New(done),
-                    Integer::New(total)
-                };
+        TryCatch try_catch;
+        abort = reportProgress->Call(NanGetCurrentContext()->Global(), 2, argv);
 
-                TryCatch try_catch;
+        if (try_catch.HasCaught()) {
+          NanThrowError(try_catch.Exception());
+          return kAbort;
+        }
 
-                abort = reportProgress->Call(Context::GetCurrent()->Global(), 2, argv);
+        return abort->IsFalse() ? kAbort : kContinue;
+      }
 
-                if (try_catch.HasCaught()) {
-                    FatalException(try_catch);
-                    return kAbort;
-                }
-
-                fprintf(stderr, "here!\n");
-
-                if (abort.IsEmpty() || !abort->IsBoolean()) {
-                    return kContinue;
-                }
-
-                return abort->IsTrue() ? kAbort : kContinue;
-            }
-
-        private:
-            Handle<Function> reportProgress; 
-            Local<Value> abort;
-    };
-
-    void HeapProfiler::Initialize(Handle<Object> target) {
-        NanScope();
-
-        Local<ObjectTemplate> tpl = NanNewLocal<ObjectTemplate>(ObjectTemplate::New());
-        NanAssignPersistent(ObjectTemplate, heap_profiler_template_, tpl);
-        tpl->SetInternalFieldCount(1);
-
-        Local<Object> heapProfilerObj = tpl->NewInstance();
-
-        NODE_SET_METHOD(heapProfilerObj, "takeSnapshot", HeapProfiler::TakeSnapshot);
-        NODE_SET_METHOD(heapProfilerObj, "getSnapshot", HeapProfiler::GetSnapshot);
-        NODE_SET_METHOD(heapProfilerObj, "findSnapshot", HeapProfiler::FindSnapshot);
-        NODE_SET_METHOD(heapProfilerObj, "getSnapshotsCount", HeapProfiler::GetSnapshotsCount);
-        NODE_SET_METHOD(heapProfilerObj, "deleteAllSnapshots", HeapProfiler::DeleteAllSnapshots);
-
-        target->Set(String::NewSymbol("heapProfiler"), heapProfilerObj);
+    private:
+      Handle<Function> reportProgress; 
+      Handle<Value> abort;
+  };
+  
+  void HeapProfiler::Initialize (Handle<Object> target) {
+    NanScope();
+    
+    Local<Object> heapProfiler = NanNew<Object>();
+    Local<Array> snapshots = NanNew<Array>();
+    
+    NODE_SET_METHOD(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);    
+    NODE_SET_METHOD(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
+    NODE_SET_METHOD(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
+    NODE_SET_METHOD(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
+    heapProfiler->Set(NanNew<String>("snapshots"), snapshots);
+    
+    NanAssignPersistent(Snapshot::snapshots, snapshots);
+    target->Set(NanNew<String>("heap"), heapProfiler);
+  }
+  
+  NAN_METHOD(HeapProfiler::TakeSnapshot) {
+    NanScope();
+    
+    ActivityControlAdapter* control = NULL;
+    Local<String> title = NanNew<String>("");
+    if (args.Length()) {
+      if (args.Length()>1) {
+        if (args[1]->IsFunction()) {
+          control = new ActivityControlAdapter(args[0]);
+        } else if (!args[1]->IsUndefined()) {
+          return NanThrowTypeError("Wrong argument [1] type (wait Function)");
+        }
+        if (args[0]->IsString()) {
+          title = args[0]->ToString();
+        } else if (!args[0]->IsUndefined()) {
+          return NanThrowTypeError("Wrong argument [0] type (wait String)");
+        }
+      } else {
+        if (args[0]->IsString()) {
+          title = args[0]->ToString();
+        } else if (args[0]->IsFunction()) {
+          control = new ActivityControlAdapter(args[0]);
+        } else if (!args[0]->IsUndefined()) {
+          return NanThrowTypeError("Wrong argument [0] type (wait String or Function)");
+        }
+      }
     }
-
-    HeapProfiler::HeapProfiler() {}
-    HeapProfiler::~HeapProfiler() {}
-
-    NAN_METHOD(HeapProfiler::GetSnapshotsCount) {
-        NanScope();
+    
 #if (NODE_MODULE_VERSION > 0x000B)
-        NanReturnValue(Integer::New(nan_isolate->GetHeapProfiler()->GetSnapshotCount()));
+    const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(title, control);
 #else
-        NanReturnValue(Integer::New(v8::HeapProfiler::GetSnapshotsCount()));
-#endif
-    }
-
-    NAN_METHOD(HeapProfiler::GetSnapshot) {
-        NanScope();
-        if (args.Length() < 1) {
-            return NanThrowError("No index specified");
-        } else if (!args[0]->IsInt32()) {
-            return NanThrowError("Argument must be an integer");
-        }
-        int32_t index = args[0]->Int32Value();
+    const HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
+#endif    
+    
+    NanReturnValue(Snapshot::New(snapshot));
+  }
+  
+  NAN_METHOD(HeapProfiler::StartTrackingHeapObjects) {
+    NanScope();
+    
 #if (NODE_MODULE_VERSION > 0x000B)
-        const v8::HeapSnapshot* snapshot = nan_isolate->GetHeapProfiler()->GetHeapSnapshot(index);
+    v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
 #else
-        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::GetSnapshot(index);
+    v8::HeapProfiler::StartHeapObjectsTracking();
 #endif
-        NanReturnValue(Snapshot::New(snapshot));
-    }
-
-    NAN_METHOD(HeapProfiler::FindSnapshot) {
-        NanScope();
-        if (args.Length() < 1) {
-            return NanThrowError("No index specified");
-        } else if (!args[0]->IsInt32()) {
-            return NanThrowError("Argument must be an integer");
-        }
-        uint32_t uid = args[0]->Uint32Value();
-        const v8::HeapSnapshot* snapshot;
-
+    
+    NanReturnUndefined();
+  }
+  
+  NAN_METHOD(HeapProfiler::StopTrackingHeapObjects) {
+    NanScope();
+    
 #if (NODE_MODULE_VERSION > 0x000B)
-        bool notFound = true;
-        int count = nan_isolate->GetHeapProfiler()->GetSnapshotCount();
-        for (int32_t index = 1; index < count; index++) {
-            snapshot = nan_isolate->GetHeapProfiler()->GetHeapSnapshot(index);
-            if (snapshot->GetUid() == uid) {
-                notFound = false;
-                break;
-            }
-        }
-        if (notFound) {
-            NanReturnNull();
-        }
+    v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
 #else
-        snapshot = v8::HeapProfiler::FindSnapshot(uid);
+    v8::HeapProfiler::StopHeapObjectsTracking();
 #endif
-        NanReturnValue(Snapshot::New(snapshot));
+    
+    NanReturnUndefined();
+  }
+  
+  NAN_METHOD(HeapProfiler::GetHeapStats) {
+    NanScope();
+    if (args.Length() < 2) {
+      return NanThrowError("Invalid number of arguments");
+    } else if (!args[0]->IsFunction() || !args[1]->IsFunction()) {
+      return NanThrowTypeError("Argument must be a function");
     }
 
-    NAN_METHOD(HeapProfiler::TakeSnapshot) {
-        NanScope();
-        Local<String> title = String::New("");
-        uint32_t len = args.Length();
-
-        ActivityControlAdapter *control = NULL;
-
-        if (len == 1) {
-            if (args[0]->IsString()) {
-                title = args[0]->ToString();
-            } else if (args[0]->IsFunction()) {
-                //control = new ActivityControlAdapter(args[0]);
-            }
-        }
-
-        if (len == 2) {
-            if (args[0]->IsString()) {
-                title = args[0]->ToString();
-            }
-
-            if (args[1]->IsFunction()) {
-                //control = new ActivityControlAdapter(args[1]);
-            }
-        }
-
+    Local<Function> iterator = Local<Function>::Cast(args[0]);
+    Local<Function> callback = Local<Function>::Cast(args[1]);
+    
+    OutputStreamAdapter* stream = new OutputStreamAdapter(iterator, callback);
 #if (NODE_MODULE_VERSION > 0x000B)
-        const v8::HeapSnapshot* snapshot = nan_isolate->GetHeapProfiler()->TakeHeapSnapshot(title, control);
+    SnapshotObjectId ID = v8::Isolate::GetCurrent()->GetHeapProfiler()->GetHeapStats(stream);
 #else
-        const v8::HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
+    SnapshotObjectId ID = v8::HeapProfiler::PushHeapObjectsStats(stream);
 #endif
-
-        NanReturnValue(Snapshot::New(snapshot));
-    }
-
-    NAN_METHOD(HeapProfiler::DeleteAllSnapshots) {
-        NanScope();
-#if (NODE_MODULE_VERSION > 0x000B)
-        nan_isolate->GetHeapProfiler()->DeleteAllHeapSnapshots();
-#else
-        v8::HeapProfiler::DeleteAllSnapshots();
-#endif
-        NanReturnUndefined();
-    }
+    NanReturnValue(NanNew<Integer>(ID));
+  }
 } //namespace nodex

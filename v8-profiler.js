@@ -1,4 +1,5 @@
-var binding = require("./build/Release/profiler");
+var binding = require("./build/Release/profiler"),
+    extend = require('util')._extend;
 
 function Snapshot() {}
 
@@ -14,56 +15,6 @@ Snapshot.prototype.compare = function (other) {
     diff[k] = their_val - my_val;
   }
   return diff;
-};
-
-Snapshot.prototype.hotPath = function() {
-  var path = [], node = this.root, c, i = 0;
-  c = this.children(node);
-  while (c.length > 0 && i < 1000) {
-    node = c[0].to;
-    c = this.children(node);
-    path.push(node);
-    i++;
-  }
-  return path;
-};
-
-Snapshot.prototype.children = function(node) {
-  var i, children = [];
-  for(i = 0; i < node.childrenCount; i++) {
-    children[i] = node.getChild(i);
-  }
-  children.sort(function (a, b){
-    return b.to.retainedSize() - a.to.retainedSize();
-  });
-  return children;
-};
-
-Snapshot.prototype.topDominatorIds = function() {
-  var doms = {}, arr;
-  this.allNodes().forEach(function(node){
-    var dom = node.dominatorNode || { id: "none"};
-    if (doms[dom.id]) {
-      doms[dom.id] += 1;
-    }
-    else {
-      doms[dom.id] = 1;
-    }
-  });
-  arr = Object.keys(doms).map(function(d){
-    return {id: d, count: doms[d]};
-  });
-  arr.sort(function(a, b) {
-    return b.count - a.count;
-  });
-  return arr;
-};
-
-Snapshot.prototype.topDominators = function() {
-  var self = this;
-  return this.topDominatorIds().map(function(d){
-    return self.getNodeById(+d.id);
-  });
 };
 
 Snapshot.prototype.allNodes = function() {
@@ -97,149 +48,95 @@ Snapshot.prototype.nodeCounts = function() {
   return objects;
 };
 
-//adapted from WebCore/bindings/v8/ScriptHeapSnapshot.cpp
-Snapshot.prototype.stringify = function() {
-  var root = this.root, i, j, count_i, count_j, node,
-      lowLevels = {}, entries = {}, entry,
-      children = {}, child, edge, result = {};
-  for (i = 0, count_i = root.childrenCount; i < count_i; i++) {
-    node = root.getChild(i).to;
-    if (node.type === 'Hidden') {
-      lowLevels[node.name] = {
-        count: node.instancesCount,
-        size: node.size,
-        type: node.name
-      };
-    }
-    else if (node.instancesCount > 0) {
-      entries[node.name] = {
-        constructorName: node.name,
-        count: node.instancesCount,
-        size: node.size
-      };
-    }
-    // FIXME: the children portion is too slow and bloats the results
-    //*
-    else {
-      entry = {
-        constructorName: node.name
-      };
-      for(j = 0, count_j = node.childrenCount; j < count_j; j++) {
-        edge = node.getChild(j);
-        child = edge.to;
-        entry[child.ptr.toString()] = {
-          constructorName: child.name,
-          count: parseInt(edge.name, 10)
-        };
-      }
-      children[node.ptr.toString()] = entry;
-    }//*/
-  }
-  result.lowlevels = lowLevels;
-  result.entries = entries;
-  result.children = children;
-  return JSON.stringify(result);
-};
-
 function CpuProfile() {}
 
-function inspectorObjectFor(node) {
-  var i, count, child,
-      result = {
-        functionName: node.functionName,
-        url: node.scriptName,
-        lineNumber: node.lineNumber,
-        totalTime: node.totalTime,
-        selfTime: node.selfTime,
-        numberOfCalls: 0,
-        visible: true,
-        callUID: node.callUid,
-        children: []
-      };
-  for(i = 0, count = node.childrenCount; i < count; i++) {
-    child = node.getChild(i);
-    result.children.push(inspectorObjectFor(child));
+CpuProfile.prototype.getHeader = function() {
+  return {
+    typeId: this.typeId,
+    uid: this.uid,
+    title: this.title
   }
-  return result;
 }
 
-CpuProfile.prototype.getTopDownRoot = function() {
-  return inspectorObjectFor(this.topRoot);
-};
+var profiler = {
+  /*HEAP PROFILER API*/
 
-CpuProfile.prototype.getBottomUpRoot = function() {
-  return inspectorObjectFor(this.bottomRoot);
-};
-
-var heapCache = [];
-
-exports.takeSnapshot = function(name, control) {
-  if (typeof name == 'function') {
-    control = name;
-    name = '';
+  get snapshots() { return binding.heap.snapshots; },
+  
+  takeSnapshot: function(name, control) {
+    var snapshot = binding.heap.takeSnapshot.apply(null, arguments);
+    snapshot.__proto__ = Snapshot.prototype;
+    return snapshot;
+  },
+  
+  getSnapshot: function(index) {
+    var snapshot = binding.heap.snapshots[index];
+    if (!snapshot) {
+      throw new Error('Snapshot at index ' + index + 'not found');
+    }
+    snapshot.__proto__ = Snapshot.prototype;
+    return snapshot;
+  },
+  
+  findSnapshot: function(uid) {
+    var snapshot = binding.heap.snapshots.filter(function(snapshot) {
+      return snapshot.uid == uid;
+    })[0];
+    if (!snapshot) {
+      throw new Error('Snapshot at index ' + index + 'not found');
+    }
+    snapshot.__proto__ = Snapshot.prototype;
+    return snapshot;
+  },
+  
+  deleteAllSnapshots: function () {
+    binding.heap.snapshots.forEach(function(snapshot) {
+      snapshot.delete();
+    });
+  },
+  
+  
+  /*CPU PROFILER API*/
+  
+  get profiles() { return binding.cpu.profiles; },
+  
+  startProfiling: binding.cpu.startProfiling,
+  
+  stopProfiling: function(name) {
+    name = name || '';
+    var profile = binding.cpu.stopProfiling(name);
+    profile.__proto__ = CpuProfile.prototype;
+    return profile;
+  },
+  
+  getProfile: function(index) {
+    var profile = binding.cpu.profiles[index];
+    if (!profile) {
+      console.log('Profile at index ' + index + 'not found');
+      return;
+    }
+    profile.__proto__ = CpuProfile.prototype;
+    return profile;
+  },
+  
+  findProfile: function(uid) {
+    var profile = binding.cpu.profiles.filter(function(profile) {
+      return profile.uid == uid;
+    })[0];
+    if (!profile) {
+      console.log('Profile at uid ' + uid + 'not found');
+      return;
+    }
+    profile.__proto__ = CpuProfile.prototype;
+    return profile;
+  },
+  
+  deleteAllProfiles: function() {
+    binding.cpu.profiles.forEach(function(profile) {
+      profile.delete();
+    });
   }
-
-  if (!name || !name.length) {
-    name = 'org.nodejs.profiles.heap.user-initiated.' + (heapCache.length + 1);
-  }
-
-  var snapshot = binding.heapProfiler.takeSnapshot(name, control);
-  snapshot.__proto__ = Snapshot.prototype;
-  heapCache.push(snapshot);
-
-  return snapshot;
 };
 
-exports.getSnapshot = function(index) {
-  return heapCache[index];
-};
-
-exports.findSnapshot = function(uid) {
-  return heapCache.filter(function(s) {return s.uid === uid;})[0];
-};
-
-exports.snapshotCount = function() {
-  return heapCache.length;
-};
-
-exports.deleteAllSnapshots = function () {
-	heapCache = [];
-	binding.heapProfiler.deleteAllSnapshots();
-};
-
-var cpuCache = [];
-
-exports.startProfiling = function(name) {
-  if (!name || !name.length) {
-    name = 'org.nodejs.profiles.cpu.user-initiated.' + (cpuCache.length + 1);
-  }
-
-  binding.cpuProfiler.startProfiling(name);
-};
-
-exports.stopProfiling = function(name) {
-  name = name ? name : '';
-  var profile = binding.cpuProfiler.stopProfiling(name);
-  profile.__proto__ = CpuProfile.prototype;
-  cpuCache.push(profile);
-  return profile;
-};
-
-exports.getProfile = function(index) {
-  return cpuCache[index];
-};
-
-exports.findProfile = function(uid) {
-  return cpuCache.filter(function(s) {return s.uid === uid;})[0];
-};
-
-exports.profileCount = function() {
-  return cpuCache.length;
-};
-
-exports.deleteAllProfiles = function() {
-  cpuCache = [];
-  binding.cpuProfiler.deleteAllProfiles();
-};
-
-process.profiler = exports;
+module.exports = profiler;
+process.profiler = profiler;
