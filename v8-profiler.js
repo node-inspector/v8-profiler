@@ -3,6 +3,14 @@ var binding = require("./build/Release/profiler"),
 
 function Snapshot() {}
 
+Snapshot.prototype.getHeader = function() {
+  return {
+    typeId: this.typeId,
+    uid: this.uid,
+    title: this.title
+  }
+}
+
 Snapshot.prototype.compare = function (other) {
   var my_objects = this.nodeCounts(),
       their_objects = other.nodeCounts(),
