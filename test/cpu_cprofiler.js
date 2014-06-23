@@ -198,6 +198,20 @@ describe('HEAP', function() {
       expect(binding.heap.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
     });
     
+    it('can serialise itself', function(done) {
+      var snapshot = binding.heap.takeSnapshot();
+      var buffer = '';
+      snapshot.serialize(
+        function iterator(data, length) {
+          buffer += data;
+        },
+        function callback() {
+          expect(JSON.parse.bind(JSON, buffer)).to.not.throw();
+          done();
+        }
+      );
+    });
+    
   });
   
   function deleteAllSnapshots() {

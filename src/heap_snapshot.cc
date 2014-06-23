@@ -69,12 +69,12 @@ namespace nodex {
     void* ptr = NanGetInternalFieldPointer(args.This(), 0);
     if (args.Length() < 2) {
       return NanThrowError("Invalid number of arguments");
-    } else if (!args[0]->IsObject()) {
-      return NanThrowTypeError("Argument must be a function");
+    } else if (!args[0]->IsFunction() || !args[1]->IsFunction()) {
+      return NanThrowTypeError("Arguments must be a functions");
     }
 
-    Local<Function> iterator = Local<Function>::Cast(args[0]);
-    Local<Function> callback = Local<Function>::Cast(args[1]);
+    Handle<Function> iterator = Handle<Function>::Cast(args[0]);
+    Handle<Function> callback = Handle<Function>::Cast(args[1]);
   
     OutputStreamAdapter *stream = new OutputStreamAdapter(iterator, callback);
     static_cast<HeapSnapshot*>(ptr)->Serialize(stream, HeapSnapshot::kJSON);

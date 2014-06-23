@@ -22,14 +22,14 @@ namespace nodex {
   }
       
   int OutputStreamAdapter::GetChunkSize() {
-    return 10240;
+    return 51200;
   }
 
   OutputStream::WriteResult OutputStreamAdapter::WriteAsciiChunk(char* data, int size) {
     NanScope();
 
     Handle<Value> argv[2] = {
-      NanBufferUse(data, size),
+      NanNew<String>(data, size),
       NanNew<Integer>(size)
     };
 
