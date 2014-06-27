@@ -79,9 +79,7 @@ var profiler = {
   
   getSnapshot: function(index) {
     var snapshot = binding.heap.snapshots[index];
-    if (!snapshot) {
-      throw new Error('Snapshot at index ' + index + 'not found');
-    }
+    if (!snapshot) return;
     snapshot.__proto__ = Snapshot.prototype;
     return snapshot;
   },
@@ -90,9 +88,7 @@ var profiler = {
     var snapshot = binding.heap.snapshots.filter(function(snapshot) {
       return snapshot.uid == uid;
     })[0];
-    if (!snapshot) {
-      throw new Error('Snapshot at index ' + index + 'not found');
-    }
+    if (!snapshot) return;
     snapshot.__proto__ = Snapshot.prototype;
     return snapshot;
   },
@@ -103,6 +99,11 @@ var profiler = {
     });
   },
   
+  startTrackingHeapObjects: binding.heap.startTrackingHeapObjects,
+  
+  stopTrackingHeapObjects: binding.heap.stopTrackingHeapObjects,
+  
+  getHeapStats: binding.heap.getHeapStats,
   
   /*CPU PROFILER API*/
   
@@ -119,10 +120,7 @@ var profiler = {
   
   getProfile: function(index) {
     var profile = binding.cpu.profiles[index];
-    if (!profile) {
-      console.log('Profile at index ' + index + 'not found');
-      return;
-    }
+    if (!profile) return;
     profile.__proto__ = CpuProfile.prototype;
     return profile;
   },
@@ -131,10 +129,7 @@ var profiler = {
     var profile = binding.cpu.profiles.filter(function(profile) {
       return profile.uid == uid;
     })[0];
-    if (!profile) {
-      console.log('Profile at uid ' + uid + 'not found');
-      return;
-    }
+    if (!profile) return;
     profile.__proto__ = CpuProfile.prototype;
     return profile;
   },
