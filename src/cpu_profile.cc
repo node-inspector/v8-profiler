@@ -86,7 +86,7 @@ namespace nodex {
     
     uint32_t count = node->GetSamplesCount();
     for (uint32_t index = 0; index < count; ++index) {
-      samples->Set(index, ProfileNode::New(node->GetSample(index)));
+      samples->Set(index, NanNew<Integer>(node->GetSample(index)->GetNodeId()));
     }
     
     profile->Set(NanNew<String>("startTime"), start_time);

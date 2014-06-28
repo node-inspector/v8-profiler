@@ -29,7 +29,7 @@ namespace nodex {
   NAN_METHOD(CpuProfiler::StartProfiling) {
     NanScope();
     
-    bool recsamples = false;
+    bool recsamples = true;
     Local<String> title = NanNew<String>("");
     if (args.Length()) {
       if (args.Length()>1) {
