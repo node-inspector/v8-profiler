@@ -23,10 +23,23 @@ namespace nodex {
     Local<ObjectTemplate> o = NanNew<ObjectTemplate>();
     Local<Object> _cache = NanNew<Object>();
     o->SetInternalFieldCount(1);
+#if (NODE_MODULE_VERSION <= 0x000B)
+    NODE_SET_METHOD(o, "getHeapValue", GraphNode::GetHeapValue);
+#endif
     o->SetAccessor(NanNew<String>("children"), GraphNode::GetChildren);
     NanAssignPersistent(graph_node_template_, o);
     NanAssignPersistent(graph_node_cache, _cache);
   }
+
+#if (NODE_MODULE_VERSION <= 0x000B)
+  NAN_METHOD(GraphNode::GetHeapValue) {
+    NanScope();
+
+    void* ptr = NanGetInternalFieldPointer(args.This(), 0);
+    HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
+    NanReturnValue(node->GetHeapValue());
+  }
+#endif
   
   NAN_GETTER(GraphNode::GetChildren) {
     NanScope();

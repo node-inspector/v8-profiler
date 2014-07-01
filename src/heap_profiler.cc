@@ -58,6 +58,7 @@ namespace nodex {
     NODE_SET_METHOD(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
     NODE_SET_METHOD(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
     NODE_SET_METHOD(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
+    NODE_SET_METHOD(heapProfiler, "getObjectByHeapObjectId", HeapProfiler::GetObjectByHeapObjectId);
     heapProfiler->Set(NanNew<String>("snapshots"), snapshots);
     
     NanAssignPersistent(Snapshot::snapshots, snapshots);
@@ -111,6 +112,54 @@ namespace nodex {
 #endif
     
     NanReturnUndefined();
+  }
+  
+  NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {
+    NanScope();
+    
+    if (args.Length() < 1) {
+      return NanThrowError("Invalid number of arguments");
+    } else if (!args[0]->IsNumber()) {
+      return NanThrowTypeError("Arguments must be a number");
+    }
+    
+    SnapshotObjectId id = args[0]->Uint32Value();
+    Local<Value> object;
+#if (NODE_MODULE_VERSION > 0x000B)
+    object = v8::Isolate::GetCurrent()->GetHeapProfiler()->FindObjectById(id);
+#else
+    Local<Array> snapshots = Local<Array>::Cast(args.This()->Get(NanNew<String>("snapshots")));
+    Local<Object> snapshot;
+    uint32_t length = snapshots->Length();
+    
+    if (length == 0) NanReturnUndefined();
+    
+    for (uint32_t i = 0; i < length; ++i) {
+      snapshot = snapshots->Get(i)->ToObject();
+      Local<Value> argv[1] = { args[0] };
+      if (snapshot->Get(NanNew<String>("maxSnapshotJSObjectId"))->Uint32Value() >= id) {
+        Local<Object> graph_node = Function::Cast(*snapshot->Get(NanNew<String>("getNodeById")))
+                                      ->Call(snapshot, 1, argv)->ToObject();
+        object = Function::Cast(*graph_node->Get(NanNew<String>("getHeapValue")))
+                  ->Call(graph_node, 0, NULL);
+        break;
+      }
+    }
+#endif
+
+    if (object.IsEmpty()) {
+      NanReturnUndefined();
+    } else if (object->IsObject()
+            || object->IsNumber()
+            || object->IsString()
+#if (NODE_MODULE_VERSION > 0x000B)
+            || object->IsSymbol()
+#endif
+            || object->IsBoolean()) {
+      NanReturnValue(object);
+    } else {
+      NanReturnValue(NanNew<String>("Preview is not available"));
+    }
   }
   
   NAN_METHOD(HeapProfiler::StopTrackingHeapObjects) {

@@ -13,6 +13,7 @@ namespace nodex {
   using v8::Object;
   using v8::ObjectTemplate;
   using v8::Persistent;
+  using v8::SnapshotObjectId;
   using v8::String;
   using v8::Function;
   using v8::Value;
@@ -28,6 +29,7 @@ namespace nodex {
     o->SetInternalFieldCount(1);
     o->SetAccessor(NanNew<String>("root"), Snapshot::GetRoot);
     NODE_SET_METHOD(o, "getNode", Snapshot::GetNode);
+    NODE_SET_METHOD(o, "getNodeById", Snapshot::GetNodeById);
     NODE_SET_METHOD(o, "delete", Snapshot::Delete);
     NODE_SET_METHOD(o, "serialize", Snapshot::Serialize);
     NanAssignPersistent(snapshot_template_, o);
@@ -51,16 +53,28 @@ namespace nodex {
     NanScope();
     
     if (!args.Length()) {
-      NanThrowError("No index specified");
-      NanReturnUndefined();
+      return NanThrowError("No index specified");
     } else if (!args[0]->IsInt32()) {
-      NanThrowTypeError("Argument must be an integer");
-      NanReturnUndefined();
+      return NanThrowTypeError("Argument must be an integer");
     }
     
     int32_t index = args[0]->Int32Value();
     void* ptr = NanGetInternalFieldPointer(args.This(), 0);
     NanReturnValue(GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetNode(index)));
+  }
+  
+  NAN_METHOD(Snapshot::GetNodeById) {
+    NanScope();
+    
+    if (!args.Length()) {
+      return NanThrowError("No id specified");
+    } else if (!args[0]->IsInt32()) {
+      return NanThrowTypeError("Argument must be an integer");
+    }
+    
+    SnapshotObjectId id = args[0]->Int32Value();
+    void* ptr = NanGetInternalFieldPointer(args.This(), 0);
+    NanReturnValue(GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetNodeById(id)));
   }
   
   NAN_METHOD(Snapshot::Serialize) {

@@ -11,6 +11,7 @@ namespace nodex {
       static v8::Handle<v8::Value> New(const v8::HeapGraphNode* node);
     private:
       static void Initialize();
+      static NAN_METHOD(GetHeapValue);
       static NAN_GETTER(GetChildren);
       static v8::Persistent<v8::ObjectTemplate> graph_node_template_;
       static v8::Persistent<v8::Object> graph_node_cache;

@@ -105,6 +105,8 @@ var profiler = {
   
   getHeapStats: binding.heap.getHeapStats,
   
+  getObjectByHeapObjectId: binding.heap.getObjectByHeapObjectId,
+  
   /*CPU PROFILER API*/
   
   get profiles() { return binding.cpu.profiles; },
