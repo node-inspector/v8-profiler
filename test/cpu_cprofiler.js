@@ -95,10 +95,9 @@ describe('CPU', function() {
     it('has expected structure', function() {
       binding.cpu.startProfiling('P');
       var profile = binding.cpu.stopProfiling();
-      var mainProps = ['functionName', 'url', 'lineNumber', 'callUID', 'children'];
-      var extendedProps = NODE_V_11 ? 
-        ['bailoutReason', 'id', 'scriptId', 'hitCount'] :
-        ['totalTime', 'selfTime', 'totalSamplesCount', 'selfSamplesCount'];
+      var mainProps = ['functionName', 'url', 'lineNumber', 'callUID', 'children',
+        'bailoutReason', 'id', 'hitCount'];
+      var extendedProps = NODE_V_11 ? ['scriptId'] : [];
       var properties = mainProps.concat(extendedProps);
       
       properties.forEach(function(prop) {
