@@ -9,6 +9,7 @@ namespace nodex {
 class ProfileNode {
  public:
    static v8::Handle<v8::Value> New(const v8::CpuProfileNode* node);
+   static uint32_t UIDCounter;
 };
 
 }

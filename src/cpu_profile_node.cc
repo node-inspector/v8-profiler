@@ -11,6 +11,8 @@ namespace nodex {
   using v8::Object;
   using v8::Array;
 
+  uint32_t ProfileNode::UIDCounter = 1;
+  
   Handle<Value> ProfileNode::New (const CpuProfileNode* node) {
     NanEscapableScope();
     
@@ -32,10 +34,10 @@ namespace nodex {
     profile_node->Set(NanNew<String>("scriptId"),      NanNew<Integer>(node->GetScriptId()));
     profile_node->Set(NanNew<String>("hitCount"),      NanNew<Integer>(node->GetHitCount()));
 #else
-    profile_node->Set(NanNew<String>("totalTime"),     NanNew<Integer>(node->GetTotalTime()));
-    profile_node->Set(NanNew<String>("selfTime"),      NanNew<Integer>(node->GetSelfTime()));
-    profile_node->Set(NanNew<String>("totalSamplesCount"), NanNew<Integer>(node->GetTotalSamplesCount()));
-    profile_node->Set(NanNew<String>("selfSamplesCount"),  NanNew<Integer>(node->GetSelfSamplesCount()));
+    profile_node->Set(NanNew<String>("bailoutReason"), NanNew<String>("no reason"));
+    profile_node->Set(NanNew<String>("id"),            NanNew<Integer>(UIDCounter++));
+    //TODO(3y3): profile_node->Set(NanNew<String>("scriptId"),      NanNew<Integer>(node->GetScriptId()));
+    profile_node->Set(NanNew<String>("hitCount"),      NanNew<Integer>(node->GetSelfSamplesCount()));
 #endif
     profile_node->Set(NanNew<String>("children"),      children);
     
