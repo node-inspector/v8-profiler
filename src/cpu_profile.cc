@@ -92,9 +92,6 @@ namespace nodex {
     profile->Set(NanNew<String>("startTime"), start_time);
     profile->Set(NanNew<String>("endTime"),   end_time);
     profile->Set(NanNew<String>("samples"),   samples);
-#else
-    Handle<Value> bottom = ProfileNode::New(node->GetBottomUpRoot());
-    profile->Set(NanNew<String>("bottomRoot"), bottom);
 #endif
     
     Local<Array> profiles = NanNew<Array>(Profile::profiles);
