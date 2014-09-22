@@ -4,6 +4,15 @@
   "description": "node bindings for the v8 profiler",
   "homepage": "http://github.com/node-inspector/v8-profiler",
   "author": "Danny Coates <dannycoates@gmail.com>",
+  "contributors": [
+    {
+      "name": "Miroslav Bajtoš"
+    },
+    {
+      "name": "3y3",
+      "email": "3y3@bk.ru"
+    }
+  ],
   "license": {
     "name": "BSD",
     "url": "https://github.com/node-inspector/v8-profiler/blob/master/LICENSE"
@@ -13,7 +22,7 @@
     "inspector"
   ],
   "engines": {
-    "node": ">=0.6"
+    "node": ">=0.10"
   },
   "main": "v8-profiler",
   "dependencies": {
