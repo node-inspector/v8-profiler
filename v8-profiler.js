@@ -1,5 +1,8 @@
-var binding = require("./build/Release/profiler"),
-    extend = require('util')._extend;
+var binary = require('node-pre-gyp');
+var path = require('path');
+var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
+var binding = require(binding_path);
+var extend = require('util')._extend;
 
 function Snapshot() {}
 
