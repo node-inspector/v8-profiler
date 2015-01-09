@@ -1,4 +1,47 @@
-language: node_js
-node_js:
-  - "0.10"
-  - "0.11"
+language: cpp
+
+compiler: gcc
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+    - export NODE_VERSION="0.10"
+    - export NODE_VERSION="0.11.13"
+  global:
+    - node_pre_gyp_region="eu-central-1"
+
+before_install:
+  - rm -rf ~/.nvm/ && git clone --depth 1 "https://github.com/creationix/nvm.git" ~/.nvm
+  - source ~/.nvm/nvm.sh
+  - nvm install $NODE_VERSION
+  - nvm use $NODE_VERSION
+
+  - export PATH="./node_modules/.bin/:$PATH"
+
+  - npm install -g node-gyp
+
+  - PUBLISH_BINARY=false
+  - if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=true; fi;
+
+  - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
+
+install:
+  - npm install --build-from-source
+  - npm test
+
+before_script:
+  - if [[ $PUBLISH_BINARY == true ]]; then node-pre-gyp package testpackage publish --verbose; fi;
+
+script:
+  - INSTALL_RESULT=0
+  - if [[ $PUBLISH_BINARY == true ]]; then
+      INSTALL_RESULT=$(npm install --fallback-to-build=false > /dev/null)$? || true;
+    fi;
+  - if [[ $INSTALL_RESULT != 0 ]]; then node-pre-gyp unpublish; false; fi
+  - node-pre-gyp clean
+
+after_success:
+  - node-pre-gyp info
