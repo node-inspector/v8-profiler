@@ -1,6 +1,6 @@
 {
   "name": "v8-profiler",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "node bindings for the v8 profiler",
   "homepage": "http://github.com/node-inspector/v8-profiler",
   "author": "Danny Coates <dannycoates@gmail.com>",
