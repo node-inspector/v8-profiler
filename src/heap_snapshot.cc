@@ -12,6 +12,7 @@ namespace nodex {
   using v8::Local;
   using v8::Object;
   using v8::ObjectTemplate;
+  using v8::FunctionTemplate;
   using v8::Persistent;
   using v8::SnapshotObjectId;
   using v8::String;
@@ -25,7 +26,8 @@ namespace nodex {
   void Snapshot::Initialize () {
     NanScope();
     
-    Local<ObjectTemplate> o = NanNew<ObjectTemplate>();
+    Local<FunctionTemplate> f = NanNew<FunctionTemplate>();
+    Local<ObjectTemplate> o = f->InstanceTemplate();
     o->SetInternalFieldCount(1);
     o->SetAccessor(NanNew<String>("root"), Snapshot::GetRoot);
     NODE_SET_METHOD(o, "getNode", Snapshot::GetNode);

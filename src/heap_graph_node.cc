@@ -9,6 +9,7 @@ namespace nodex {
   using v8::Local;
   using v8::Object;
   using v8::ObjectTemplate;
+  using v8::FunctionTemplate;
   using v8::Persistent;
   using v8::String;
   using v8::Value;
@@ -20,7 +21,8 @@ namespace nodex {
   void GraphNode::Initialize () {
     NanScope();
     
-    Local<ObjectTemplate> o = NanNew<ObjectTemplate>();
+    Local<FunctionTemplate> f = NanNew<FunctionTemplate>();
+    Local<ObjectTemplate> o = f->InstanceTemplate();
     Local<Object> _cache = NanNew<Object>();
     o->SetInternalFieldCount(1);
 #if (NODE_MODULE_VERSION <= 0x000B)

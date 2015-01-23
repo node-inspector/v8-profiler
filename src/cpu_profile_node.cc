@@ -37,7 +37,7 @@ namespace nodex {
     profile_node->Set(NanNew<String>("bailoutReason"), NanNew<String>("no reason"));
     profile_node->Set(NanNew<String>("id"),            NanNew<Integer>(UIDCounter++));
     //TODO(3y3): profile_node->Set(NanNew<String>("scriptId"),      NanNew<Integer>(node->GetScriptId()));
-    profile_node->Set(NanNew<String>("hitCount"),      NanNew<Integer>(node->GetSelfSamplesCount()));
+    profile_node->Set(NanNew<String>("hitCount"),      NanNew(node->GetSelfSamplesCount()));
 #endif
     profile_node->Set(NanNew<String>("children"),      children);
     

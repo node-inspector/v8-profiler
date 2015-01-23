@@ -11,6 +11,7 @@ namespace nodex {
   using v8::Local;
   using v8::Object;
   using v8::ObjectTemplate;
+  using v8::FunctionTemplate;
   using v8::Persistent;
   using v8::String;
   using v8::Function;
@@ -23,7 +24,8 @@ namespace nodex {
   void Profile::Initialize () {
     NanScope();
     
-    Local<ObjectTemplate> o = NanNew<ObjectTemplate>();
+    Local<FunctionTemplate> f = NanNew<FunctionTemplate>();
+    Local<ObjectTemplate> o = f->InstanceTemplate();
     o->SetInternalFieldCount(1);
     NODE_SET_METHOD(o, "delete", Profile::Delete);
     NanAssignPersistent(profile_template_, o);
