@@ -2,7 +2,6 @@ var binary = require('node-pre-gyp');
 var path = require('path');
 var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
 var binding = require(binding_path);
-var extend = require('util')._extend;
 
 function Snapshot() {}
 
@@ -17,7 +16,7 @@ Snapshot.prototype.getHeader = function() {
 Snapshot.prototype.compare = function (other) {
   var my_objects = this.nodeCounts(),
       their_objects = other.nodeCounts(),
-      diff = {}, i, k, my_val, their_val;
+      diff = {}, i, k, my_val, their_val,
       all_keys = Object.keys(my_objects).concat(Object.keys(their_objects)); //has dupes, oh well
   for (i = 0; i < all_keys.length; i++) {
     k = all_keys[i];
@@ -69,7 +68,7 @@ CpuProfile.prototype.getHeader = function() {
   }
 }
 
-var starTime, endTime;
+var startTime, endTime;
 
 var profiler = {
   /*HEAP PROFILER API*/
