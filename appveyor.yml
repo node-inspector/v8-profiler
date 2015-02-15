@@ -5,11 +5,19 @@ environment:
     secure: jJxKoyWputzRz2EjAT9i/vBzYt2+lcjKZ5D6O5TBaS9+anpYHn2XWbOut5dkOgh0
   node_pre_gyp_region: eu-central-1
   matrix:
-    - NODE_VERSION: 0.11.13
+    - NODE_VERSION: 1
+      platform: x64
+    - NODE_VERSION: 1
+      platform: x86
+    - NODE_VERSION: 0.12
+      platform: x64
+    - NODE_VERSION: 0.12
+      platform: x86
+    - NODE_VERSION: 0.11
       platform: x64
     - NODE_VERSION: 0.10
       platform: x64
-    - NODE_VERSION: 0.11.13
+    - NODE_VERSION: 0.11
       platform: x86
     - NODE_VERSION: 0.10
       platform: x86
@@ -19,7 +27,7 @@ os: unstable
 install:
   - cmd: SET PATH=%cd%\node_modules\.bin\;%PATH%
 
-  - ps: Install-Product node $env:NODE_VERSION $env:platform
+  - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:NODE_VERSION) $env:platform
 
   - cmd: SET PUBLISH_BINARY=false
   - cmd: git describe --tags --always HEAD > _git_tag.tmp
@@ -33,7 +41,8 @@ build_script:
   - cmd: npm install --build-from-source --msvs_version=2013
 
 test_script:
-  - cmd: npm test
+  - cmd: IF NOT %NODE_VERSION% == 1 npm test
+  - cmd: IF %NODE_VERSION% == 1 iojs --debug node_modules/mocha/bin/_mocha
 
 on_success:
   - cmd: IF %PUBLISH_BINARY% == true (node-pre-gyp package publish 2>&1)
