@@ -1,4 +1,5 @@
 const binding = require('../build/Release/profiler'),
+      profiler = require('../'),
       expect  = require('chai').expect;
 
 const NODE_V_10 = /^v0\.10\.\d+$/.test(process.version),
@@ -209,6 +210,15 @@ describe('HEAP', function() {
           done();
         }
       );
+    });
+
+    it('Snapshot.toJSON', function(done) {
+      var snapshot = profiler.takeSnapshot();
+      snapshot.toJSON(function callback(err, json) {
+        expect(!err);
+        expect(JSON.parse.bind(JSON, json)).to.not.throw();
+        done();
+      });
     });
     
   });
