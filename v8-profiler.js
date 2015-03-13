@@ -58,6 +58,21 @@ Snapshot.prototype.nodeCounts = function() {
   return objects;
 };
 
+Snapshot.prototype.toJSON = function toJSON(cb) {
+  var chunks = [];
+
+  function onChunk(chunk, len) {
+    chunks.push(chunk);
+  }
+
+  function onDone() {
+    var s = chunks.join('');
+    cb(null, s);
+  }
+
+  this.serialize(onChunk, onDone);
+};
+
 function CpuProfile() {}
 
 CpuProfile.prototype.getHeader = function() {
