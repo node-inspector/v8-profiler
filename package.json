@@ -37,8 +37,8 @@
   },
   "main": "v8-profiler",
   "dependencies": {
-    "node-pre-gyp": "^0.6.4",
-    "nan": "~1.5.3"
+    "node-pre-gyp": "^0.6.5",
+    "nan": "~1.8.4"
   },
   "bundledDependencies":["node-pre-gyp"],
   "devDependencies": {
