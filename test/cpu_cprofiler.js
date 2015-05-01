@@ -1,8 +1,11 @@
-const binding = require('../build/Release/profiler'),
-      expect  = require('chai').expect;
+const expect  = require('chai').expect,
+      binary = require('node-pre-gyp'),
+      path = require('path'),
+      binding_path = binary.find(path.resolve(path.join(__dirname,'../package.json'))),
+      binding = require(binding_path),
+      profiler = require('../');
 
-const NODE_V_10 = /^v0\.10\.\d+$/.test(process.version),
-      NODE_V_11 = /^v0\.11\.\d+$/.test(process.version);
+const NODE_V_10 = /^v0\.10\.\d+$/.test(process.version);
     
 describe('Profiler container', function() {
 
@@ -37,7 +40,7 @@ describe('CPU', function() {
       expect(binding.cpu.stopProfiling).to.not.throw();
     });
     
-    it('cashes profiles', function() {
+    it('should cashe profiles', function() {
       expect(binding.cpu.profiles).to.have.length(1);
     });
     
@@ -71,16 +74,16 @@ describe('CPU', function() {
     it('has expected structure', function() {
       binding.cpu.startProfiling();
       var profile = binding.cpu.stopProfiling();
-      var properties = NODE_V_11 ?
-        ['delete', 'typeId', 'uid', 'title', 'head', 'startTime', 'endTime', 'samples'] :
-        ['delete', 'typeId', 'uid', 'title', 'head'];
+      var properties = NODE_V_10 ?
+        ['delete', 'typeId', 'uid', 'title', 'head'] :
+        ['delete', 'typeId', 'uid', 'title', 'head', 'startTime', 'endTime', 'samples'];
         
       properties.forEach(function(prop) {
         expect(profile).to.have.property(prop);
       });
     });
     
-    it('can delete itself from profiler cache', function() {
+    it('should delete itself from profiler cache', function() {
       binding.cpu.startProfiling();
       var profile = binding.cpu.stopProfiling();
       var oldProfilesLength = binding.cpu.profiles.length;
@@ -97,7 +100,7 @@ describe('CPU', function() {
       var profile = binding.cpu.stopProfiling();
       var mainProps = ['functionName', 'url', 'lineNumber', 'callUID', 'children',
         'bailoutReason', 'id', 'hitCount'];
-      var extendedProps = NODE_V_11 ? ['scriptId'] : [];
+      var extendedProps = NODE_V_10 ? [] : ['scriptId'];
       var properties = mainProps.concat(extendedProps);
       
       properties.forEach(function(prop) {
@@ -137,7 +140,7 @@ describe('HEAP', function() {
       expect(binding.heap.takeSnapshot).to.not.throw();
     });
   
-    it('cashes snapshots', function() {
+    it('should cashe snapshots', function() {
       expect(binding.heap.snapshots).to.have.length(1);
     });
     
@@ -190,14 +193,14 @@ describe('HEAP', function() {
       });
     });
     
-    it('can delete itself from profiler cache', function() {
+    it('should delete itself from profiler cache', function() {
       var snapshot = binding.heap.takeSnapshot();
       var oldSnapshotsLength = binding.heap.snapshots.length;
       snapshot.delete();
       expect(binding.heap.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
     });
     
-    it('can serialise itself', function(done) {
+    it('should serialise itself', function(done) {
       var snapshot = binding.heap.takeSnapshot();
       var buffer = '';
       snapshot.serialize(
