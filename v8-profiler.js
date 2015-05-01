@@ -13,47 +13,42 @@ Snapshot.prototype.getHeader = function() {
   }
 }
 
-Snapshot.prototype.compare = function (other) {
-  var my_objects = this.nodeCounts(),
-      their_objects = other.nodeCounts(),
-      diff = {}, i, k, my_val, their_val,
-      all_keys = Object.keys(my_objects).concat(Object.keys(their_objects)); //has dupes, oh well
-  for (i = 0; i < all_keys.length; i++) {
-    k = all_keys[i];
-    my_val = my_objects[k] || 0;
-    their_val = their_objects[k] || 0;
-    diff[k] = their_val - my_val;
-  }
+/**
+ * @param {Snapshot} other
+ * @returns {Object}
+ */
+Snapshot.prototype.compare = function(other) {
+  var selfHist = nodesHist(this),
+      otherHist = nodesHist(other),
+      keys = Object.keys(selfHist).concat(Object.keys(otherHist)),
+      diff = {};
+  
+  keys.forEach(function(key) {
+    if (key in diff) return;
+
+    var selfCount = selfCounts[key] || 0,
+        otherCount = otherCounts[key] || 0;
+
+    diff[key] = otherCount - selfCount;
+  });
+
   return diff;
 };
 
-Snapshot.prototype.allNodes = function() {
-  var n = this.nodesCount, i, nodes = [];
+function nodes(snapshot) {
+  var n = snapshot.nodesCount, i, nodes = [];
   for (i = 0; i < n; i++) {
-    nodes[i] = this.getNode(i);
+    nodes[i] = snapshot.getNode(i);
   }
   return nodes;
 };
 
-Snapshot.prototype.nodeCounts = function() {
+function nodesHist(snapshot) {
   var objects = {};
-  this.allNodes().forEach(function(n){
-    if(n.type === "Object") {
-      if (objects[n.name]) {
-        objects[n.name] += 1;
-      }
-      else {
-        objects[n.name] = 1;
-      }
-    }
-    else {
-      if (objects[n.type]) {
-        objects[n.type] += 1;
-      }
-      else {
-        objects[n.type] = 1;
-      }
-    }
+  nodes(snapshot).forEach(function(node){
+    var key = node.type === "Object" ? node.name : node.type;
+    objects[key] = objects[node.name] || 0;
+    objects[key]++;
   });
   return objects;
 };
