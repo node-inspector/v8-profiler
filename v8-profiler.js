@@ -3,6 +3,9 @@ var path = require('path');
 var binding_path = binary.find(path.resolve(path.join(__dirname,'./package.json')));
 var binding = require(binding_path);
 
+var Stream = require('stream').Stream,
+    inherits = require('util').inherits;
+
 function Snapshot() {}
 
 Snapshot.prototype.getHeader = function() {
@@ -33,6 +36,39 @@ Snapshot.prototype.compare = function(other) {
   });
 
   return diff;
+};
+
+function ExportStream() {
+  Stream.Transform.call(this);
+  this._transform = function noTransform(chunk, encoding, done) {
+    done(null, chunk);
+  }
+}
+inherits(ExportStream, Stream.Transform);
+
+/**
+ * @param {Stream.Writable|function} dataReceiver
+ * @returns {Stream|function}
+ */
+Snapshot.prototype.export = function(dataReceiver) {
+  dataReceiver = dataReceiver || new ExportStream();
+  
+  var toStream = dataReceiver instanceof Stream,
+      chunks = toStream ? null : [];
+
+  function onChunk(chunk, len) {
+    if (toStream) dataReceiver.write(chunk);
+    else chunks.push(chunk);
+  }
+
+  function onDone() {
+    if (toStream) dataReceiver.end();
+    else dataReceiver(null, chunks.join(''));
+  }
+
+  this.serialize(onChunk, onDone);
+  
+  return dataReceiver;
 };
 
 function nodes(snapshot) {
