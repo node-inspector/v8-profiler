@@ -1,6 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/node-inspector/v8-profiler.png?branch=master)](http://travis-ci.org/node-inspector/v8-profiler)
 
-v8-profiler provides [node](http://github.com/ry/node) bindings for the v8 
+v8-profiler provides [node](http://github.com/nodejs/node) bindings for the v8 
 profiler and integration with [node-inspector](http://github.com/dannycoates/node-inspector)
 
 ## Installation
