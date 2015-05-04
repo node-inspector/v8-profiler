@@ -12,6 +12,33 @@ namespace nodex {
   using v8::Array;
 
   uint32_t ProfileNode::UIDCounter = 1;
+
+  #if (NODE_MODULE_VERSION >= 42)
+  static Handle<Value> GetLineTicks(const CpuProfileNode* node) {
+    NanEscapableScope();
+
+    unsigned int count = node->GetHitLineCount();
+    v8::CpuProfileNode::LineTick *entries = new v8::CpuProfileNode::LineTick[count];
+    bool result = node->GetLineTicks(entries, count);
+
+    Local<Value> lineTicks;
+    if (result) {
+      Local<Array> array = NanNew<Array>(count);
+      for (unsigned int index = 0; index < count; index++) {
+        Local<Object> tick = NanNew<Object>();
+        tick->Set(NanNew<String>("line"),     NanNew<Integer>(entries[index].line));
+        tick->Set(NanNew<String>("hitCount"), NanNew<Integer>(entries[index].hit_count));
+        array->Set(index, tick);
+      }
+      lineTicks = array;
+    } else {
+      lineTicks = NanNull();
+    }
+
+    delete[] entries;
+    return NanEscapeScope(lineTicks);
+  }
+#endif
   
   Handle<Value> ProfileNode::New (const CpuProfileNode* node) {
     NanEscapableScope();
@@ -40,7 +67,15 @@ namespace nodex {
     profile_node->Set(NanNew<String>("hitCount"),      NanNew(node->GetSelfSamplesCount()));
 #endif
     profile_node->Set(NanNew<String>("children"),      children);
-    
+
+#if (NODE_MODULE_VERSION >= 42)
+    auto lineTicks = GetLineTicks(node);
+    if (!lineTicks->IsNull()) {
+      profile_node->Set(NanNew<String>("lineTicks"), lineTicks);
+    }
+#endif
+
     return NanEscapeScope(profile_node);
   }
+
 }
