@@ -1,4 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/node-inspector/v8-profiler.png?branch=master)](http://travis-ci.org/node-inspector/v8-profiler)
+[![Build status](https://ci.appveyor.com/api/projects/status/hhgloy5smkl5i8fd/branch/master?svg=true)](https://ci.appveyor.com/project/3y3/v8-profiler/branch/master)
+[![npm version](https://badge.fury.io/js/v8-profiler.svg)](http://badge.fury.io/js/v8-profiler)
 
 v8-profiler provides [node](http://github.com/ry/node) bindings for the v8 
 profiler and integration with [node-inspector](http://github.com/dannycoates/node-inspector)
