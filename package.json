@@ -47,7 +47,7 @@
   },
   "scripts": {
     "preinstall": " ",
-    "postinstall": "node-pre-gyp install --fallback-to-build",
+    "install": "node-pre-gyp install --fallback-to-build",
     "test": "mocha"
   }
 }
