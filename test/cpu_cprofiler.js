@@ -67,6 +67,16 @@ describe('CPU', function() {
       expect(profile.samples.length > 0).to.equal(true);
     });
 
+    it('should record startTime and endTime with subsecond precision', function(done) {
+      profiler.startProfiling('P');
+      var delayInMilliseconds = 150;
+      setTimeout(function() {
+        var profile = profiler.stopProfiling();
+        var elapsedTime = profile.endTime - profile.startTime;
+        expect(elapsedTime).to.be.at.least(delayInMilliseconds / 1000);
+        done();
+      }, delayInMilliseconds);
+    });
   });
 
   describe('Profile', function() {

@@ -111,13 +111,13 @@ var profiler = {
   get profiles() { return binding.cpu.profiles; },
   
   startProfiling: function(name, recsamples) {
-    startTime = Date.now();
+    startTime = Date.now() / 1000;
     binding.cpu.startProfiling(name, recsamples);
   },
   
   stopProfiling: function(name) {
     var profile = binding.cpu.stopProfiling(name);
-    endTime = Date.now();
+    endTime = Date.now() / 1000;
     profile.__proto__ = CpuProfile.prototype;
     if (!profile.startTime) profile.startTime = startTime;
     if (!profile.endTime) profile.endTime = endTime;
