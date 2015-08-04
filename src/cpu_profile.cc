@@ -82,8 +82,8 @@ namespace nodex {
     profile->Set(NanNew<String>("head"),      head);
 
 #if (NODE_MODULE_VERSION > 0x000B)
-    Local<Value> start_time = NanNew<Number>(node->GetStartTime()/1000000);
-    Local<Value> end_time = NanNew<Number>(node->GetEndTime()/1000000);
+    Local<Value> start_time = NanNew<Number>((double)node->GetStartTime()/1000000.00);
+    Local<Value> end_time = NanNew<Number>((double)node->GetEndTime()/1000000.00);
     Local<Array> samples = NanNew<Array>();
     
     uint32_t count = node->GetSamplesCount();
