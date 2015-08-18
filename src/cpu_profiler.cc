@@ -13,43 +13,41 @@ namespace nodex {
   CpuProfiler::~CpuProfiler () {}
 
   void CpuProfiler::Initialize (Handle<Object> target) {
-    NanScope();
+    Nan::HandleScope scope;
     
-    Local<Object> cpuProfiler = NanNew<Object>();
-    Local<Array> profiles = NanNew<Array>();
+    Local<Object> cpuProfiler = Nan::New<Object>();
+    Local<Array> profiles = Nan::New<Array>();
     
-    NODE_SET_METHOD(cpuProfiler, "startProfiling", CpuProfiler::StartProfiling);
-    NODE_SET_METHOD(cpuProfiler, "stopProfiling", CpuProfiler::StopProfiling);
-    cpuProfiler->Set(NanNew<String>("profiles"), profiles);
+    Nan::SetMethod(cpuProfiler, "startProfiling", CpuProfiler::StartProfiling);
+    Nan::SetMethod(cpuProfiler, "stopProfiling", CpuProfiler::StopProfiling);
+    cpuProfiler->Set(Nan::New<String>("profiles").ToLocalChecked(), profiles);
     
-    NanAssignPersistent(Profile::profiles, profiles);
-    target->Set(NanNew<String>("cpu"), cpuProfiler);
+    Profile::profiles.Reset(profiles);
+    target->Set(Nan::New<String>("cpu").ToLocalChecked(), cpuProfiler);
   }
 
   NAN_METHOD(CpuProfiler::StartProfiling) {
-    NanScope();
-    
     bool recsamples = true;
-    Local<String> title = NanNew<String>("");
-    if (args.Length()) {
-      if (args.Length()>1) {
-        if (args[1]->IsBoolean()) {
-          recsamples = args[1]->ToBoolean()->Value();
-        } else if (!args[1]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [1] type (wait Boolean)");
+    Local<String> title = Nan::New<String>("").ToLocalChecked();
+    if (info.Length()) {
+      if (info.Length()>1) {
+        if (info[1]->IsBoolean()) {
+          recsamples = info[1]->ToBoolean()->Value();
+        } else if (!info[1]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [1] type (wait Boolean)");
         }
-        if (args[0]->IsString()) {
-          title = args[0]->ToString();
-        } else if (!args[0]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [0] type (wait String)");
+        if (info[0]->IsString()) {
+          title = info[0]->ToString();
+        } else if (!info[0]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [0] type (wait String)");
         }
       } else {
-        if (args[0]->IsString()) {
-          title = args[0]->ToString();
-        } else if (args[0]->IsBoolean()) {
-          recsamples = args[0]->ToBoolean()->Value();
-        } else if (!args[0]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [0] type (wait String or Boolean)");
+        if (info[0]->IsString()) {
+          title = info[0]->ToString();
+        } else if (info[0]->IsBoolean()) {
+          recsamples = info[0]->ToBoolean()->Value();
+        } else if (!info[0]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [0] type (wait String or Boolean)");
         }
       }
     }
@@ -59,21 +57,17 @@ namespace nodex {
 #else
     v8::CpuProfiler::StartProfiling(title);
 #endif
-
-    NanReturnUndefined();
   }
 
   NAN_METHOD(CpuProfiler::StopProfiling) {
-    NanScope();
-
     const CpuProfile* profile;
     
-    Local<String> title = NanNew<String>("");
-    if (args.Length()) {
-      if (args[0]->IsString()) {
-        title = args[0]->ToString();
-      } else if (!args[0]->IsUndefined()) {
-        return NanThrowTypeError("Wrong argument [0] type (wait String)");
+    Local<String> title = Nan::New<String>("").ToLocalChecked();
+    if (info.Length()) {
+      if (info[0]->IsString()) {
+        title = info[0]->ToString();
+      } else if (!info[0]->IsUndefined()) {
+        return Nan::ThrowTypeError("Wrong argument [0] type (wait String)");
       }
     }
     
@@ -83,6 +77,6 @@ namespace nodex {
     profile = v8::CpuProfiler::StopProfiling(title);
 #endif
     
-    NanReturnValue(Profile::New(profile));
+    info.GetReturnValue().Set(Profile::New(profile));
   }
 } //namespace nodex

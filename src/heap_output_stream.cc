@@ -13,11 +13,12 @@ namespace nodex {
   using v8::Integer;
 
   void OutputStreamAdapter::EndOfStream() {
+    Nan::HandleScope scope;
     TryCatch try_catch;
-    callback->Call(NanGetCurrentContext()->Global(), 0, NULL);
+    callback->Call(Nan::GetCurrentContext()->Global(), 0, NULL);
 
     if (try_catch.HasCaught()) {
-      NanThrowError(try_catch.Exception());
+      Nan::ThrowError(try_catch.Exception());
     }
   }
       
@@ -26,18 +27,18 @@ namespace nodex {
   }
 
   OutputStream::WriteResult OutputStreamAdapter::WriteAsciiChunk(char* data, int size) {
-    NanScope();
+    Nan::HandleScope scope;
 
     Handle<Value> argv[2] = {
-      NanNew<String>(data, size),
-      NanNew<Integer>(size)
+      Nan::New<String>(data, size).ToLocalChecked(),
+      Nan::New<Integer>(size)
     };
 
     TryCatch try_catch;
-    abort = iterator->Call(NanGetCurrentContext()->Global(), 2, argv);
+    abort = iterator->Call(Nan::GetCurrentContext()->Global(), 2, argv);
 
     if (try_catch.HasCaught()) {
-      NanThrowError(try_catch.Exception());
+      Nan::ThrowError(try_catch.Exception());
       return kAbort;
     }
     
@@ -45,23 +46,23 @@ namespace nodex {
   }
   
   OutputStream::WriteResult OutputStreamAdapter::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
-    NanScope();
+    Nan::HandleScope scope;
     
-    Local<Array> samples = NanNew<Array>();
+    Local<Array> samples = Nan::New<Array>();
     for (int index = 0; index < count; index++) {
       int offset = index * 3;
-      samples->Set(offset, NanNew<Integer>(data[index].index));
-      samples->Set(offset+1, NanNew<Integer>(data[index].count));
-      samples->Set(offset+2, NanNew<Integer>(data[index].size));
+      samples->Set(offset, Nan::New<Integer>(data[index].index));
+      samples->Set(offset+1, Nan::New<Integer>(data[index].count));
+      samples->Set(offset+2, Nan::New<Integer>(data[index].size));
     }
 
     Local<Value> argv[1] = {samples};
 
     TryCatch try_catch;
-    abort = iterator->Call(NanGetCurrentContext()->Global(), 1, argv);
+    abort = iterator->Call(Nan::GetCurrentContext()->Global(), 1, argv);
 
     if (try_catch.HasCaught()) {
-      NanThrowError(try_catch.Exception());
+      Nan::ThrowError(try_catch.Exception());
       return kAbort;
     }
 
