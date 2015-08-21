@@ -23,20 +23,20 @@ namespace nodex {
     public:
       ActivityControlAdapter(Handle<Value> progress)
         : reportProgress(Handle<Function>::Cast(progress)),
-          abort(NanFalse()) 
+          abort(Nan::False()) 
       {}
 
       ControlOption ReportProgressValue(int done, int total) {
         Local<Value> argv[2] = {
-          NanNew<Integer>(done),
-          NanNew<Integer>(total)
+          Nan::New<Integer>(done),
+          Nan::New<Integer>(total)
         };
 
         TryCatch try_catch;
-        abort = reportProgress->Call(NanGetCurrentContext()->Global(), 2, argv);
+        abort = reportProgress->Call(Nan::GetCurrentContext()->Global(), 2, argv);
 
         if (try_catch.HasCaught()) {
-          NanThrowError(try_catch.Exception());
+          Nan::ThrowError(try_catch.Exception());
           return kAbort;
         }
 
@@ -49,98 +49,95 @@ namespace nodex {
   };
   
   void HeapProfiler::Initialize (Handle<Object> target) {
-    NanScope();
+    Nan::HandleScope scope;
     
-    Local<Object> heapProfiler = NanNew<Object>();
-    Local<Array> snapshots = NanNew<Array>();
+    Local<Object> heapProfiler = Nan::New<Object>();
+    Local<Array> snapshots = Nan::New<Array>();
     
-    NODE_SET_METHOD(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);    
-    NODE_SET_METHOD(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
-    NODE_SET_METHOD(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
-    NODE_SET_METHOD(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
-    NODE_SET_METHOD(heapProfiler, "getObjectByHeapObjectId", HeapProfiler::GetObjectByHeapObjectId);
-    heapProfiler->Set(NanNew<String>("snapshots"), snapshots);
+    Nan::SetMethod(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);    
+    Nan::SetMethod(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
+    Nan::SetMethod(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
+    Nan::SetMethod(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
+    Nan::SetMethod(heapProfiler, "getObjectByHeapObjectId", HeapProfiler::GetObjectByHeapObjectId);
+    heapProfiler->Set(Nan::New<String>("snapshots").ToLocalChecked(), snapshots);
     
-    NanAssignPersistent(Snapshot::snapshots, snapshots);
-    target->Set(NanNew<String>("heap"), heapProfiler);
+    Snapshot::snapshots.Reset(snapshots);
+    target->Set(Nan::New<String>("heap").ToLocalChecked(), heapProfiler);
   }
   
   NAN_METHOD(HeapProfiler::TakeSnapshot) {
-    NanScope();
-    
     ActivityControlAdapter* control = NULL;
-    Local<String> title = NanNew<String>("");
-    if (args.Length()) {
-      if (args.Length()>1) {
-        if (args[1]->IsFunction()) {
-          control = new ActivityControlAdapter(args[0]);
-        } else if (!args[1]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [1] type (wait Function)");
+    Local<String> title = Nan::EmptyString();
+    if (info.Length()) {
+      if (info.Length()>1) {
+        if (info[1]->IsFunction()) {
+          control = new ActivityControlAdapter(info[0]);
+        } else if (!info[1]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [1] type (wait Function)");
         }
-        if (args[0]->IsString()) {
-          title = args[0]->ToString();
-        } else if (!args[0]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [0] type (wait String)");
+        if (info[0]->IsString()) {
+          title = info[0]->ToString();
+        } else if (!info[0]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [0] type (wait String)");
         }
       } else {
-        if (args[0]->IsString()) {
-          title = args[0]->ToString();
-        } else if (args[0]->IsFunction()) {
-          control = new ActivityControlAdapter(args[0]);
-        } else if (!args[0]->IsUndefined()) {
-          return NanThrowTypeError("Wrong argument [0] type (wait String or Function)");
+        if (info[0]->IsString()) {
+          title = info[0]->ToString();
+        } else if (info[0]->IsFunction()) {
+          control = new ActivityControlAdapter(info[0]);
+        } else if (!info[0]->IsUndefined()) {
+          return Nan::ThrowTypeError("Wrong argument [0] type (wait String or Function)");
         }
       }
     }
     
-#if (NODE_MODULE_VERSION > 0x000B)
+
+#if (NODE_MODULE_VERSION > 0x002C)
+    const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(control);
+#elif (NODE_MODULE_VERSION > 0x000B)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(title, control);
 #else
     const HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
 #endif    
     
-    NanReturnValue(Snapshot::New(snapshot));
+    info.GetReturnValue().Set(Snapshot::New(snapshot));
   }
   
   NAN_METHOD(HeapProfiler::StartTrackingHeapObjects) {
-    NanScope();
-    
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
 #else
     v8::HeapProfiler::StartHeapObjectsTracking();
 #endif
     
-    NanReturnUndefined();
+    return;
   }
   
   NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {
-    NanScope();
-    
-    if (args.Length() < 1) {
-      return NanThrowError("Invalid number of arguments");
-    } else if (!args[0]->IsNumber()) {
-      return NanThrowTypeError("Arguments must be a number");
+    if (info.Length() < 1) {
+      return Nan::ThrowError("Invalid number of arguments");
+    } else if (!info[0]->IsNumber()) {
+      return Nan::ThrowTypeError("Arguments must be a number");
     }
     
-    SnapshotObjectId id = args[0]->Uint32Value();
+    SnapshotObjectId id = info[0]->Uint32Value();
     Local<Value> object;
 #if (NODE_MODULE_VERSION > 0x000B)
     object = v8::Isolate::GetCurrent()->GetHeapProfiler()->FindObjectById(id);
 #else
-    Local<Array> snapshots = Local<Array>::Cast(args.This()->Get(NanNew<String>("snapshots")));
+    Local<Array> snapshots = Local<Array>::Cast(info.This()->Get(Nan::New<String>("snapshots").ToLocalChecked()));
     Local<Object> snapshot;
     uint32_t length = snapshots->Length();
     
-    if (length == 0) NanReturnUndefined();
+    if (length == 0) return;
     
     for (uint32_t i = 0; i < length; ++i) {
       snapshot = snapshots->Get(i)->ToObject();
-      Local<Value> argv[1] = { args[0] };
-      if (snapshot->Get(NanNew<String>("maxSnapshotJSObjectId"))->Uint32Value() >= id) {
-        Local<Object> graph_node = Function::Cast(*snapshot->Get(NanNew<String>("getNodeById")))
+      Local<Value> argv[1] = { info[0] };
+      if (snapshot->Get(Nan::New<String>("maxSnapshotJSObjectId").ToLocalChecked())->Uint32Value() >= id) {
+        Local<Object> graph_node = Function::Cast(*snapshot->Get(Nan::New<String>("getNodeById").ToLocalChecked()))
                                       ->Call(snapshot, 1, argv)->ToObject();
-        object = Function::Cast(*graph_node->Get(NanNew<String>("getHeapValue")))
+        object = Function::Cast(*graph_node->Get(Nan::New<String>("getHeapValue").ToLocalChecked()))
                   ->Call(graph_node, 0, NULL);
         break;
       }
@@ -148,7 +145,7 @@ namespace nodex {
 #endif
 
     if (object.IsEmpty()) {
-      NanReturnUndefined();
+      return;
     } else if (object->IsObject()
             || object->IsNumber()
             || object->IsString()
@@ -156,34 +153,29 @@ namespace nodex {
             || object->IsSymbol()
 #endif
             || object->IsBoolean()) {
-      NanReturnValue(object);
+      info.GetReturnValue().Set(object);
     } else {
-      NanReturnValue(NanNew<String>("Preview is not available"));
+      info.GetReturnValue().Set(Nan::New<String>("Preview is not available").ToLocalChecked());
     }
   }
   
   NAN_METHOD(HeapProfiler::StopTrackingHeapObjects) {
-    NanScope();
-    
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
 #else
     v8::HeapProfiler::StopHeapObjectsTracking();
 #endif
-    
-    NanReturnUndefined();
   }
   
   NAN_METHOD(HeapProfiler::GetHeapStats) {
-    NanScope();
-    if (args.Length() < 2) {
-      return NanThrowError("Invalid number of arguments");
-    } else if (!args[0]->IsFunction() || !args[1]->IsFunction()) {
-      return NanThrowTypeError("Argument must be a function");
+    if (info.Length() < 2) {
+      return Nan::ThrowError("Invalid number of arguments");
+    } else if (!info[0]->IsFunction() || !info[1]->IsFunction()) {
+      return Nan::ThrowTypeError("Argument must be a function");
     }
 
-    Local<Function> iterator = Local<Function>::Cast(args[0]);
-    Local<Function> callback = Local<Function>::Cast(args[1]);
+    Local<Function> iterator = Local<Function>::Cast(info[0]);
+    Local<Function> callback = Local<Function>::Cast(info[1]);
     
     OutputStreamAdapter* stream = new OutputStreamAdapter(iterator, callback);
 #if (NODE_MODULE_VERSION > 0x000B)
@@ -191,6 +183,6 @@ namespace nodex {
 #else
     SnapshotObjectId ID = v8::HeapProfiler::PushHeapObjectsStats(stream);
 #endif
-    NanReturnValue(NanNew<Integer>(ID));
+    info.GetReturnValue().Set(Nan::New<Integer>(ID));
   }
 } //namespace nodex

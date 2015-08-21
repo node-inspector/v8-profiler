@@ -11,7 +11,7 @@ class OutputStreamAdapter : public v8::OutputStream {
       OutputStreamAdapter(
         v8::Handle<v8::Function> _iterator, 
         v8::Handle<v8::Function> _callback)
-      : abort(NanFalse()) 
+      : abort(Nan::False()) 
       , iterator(_iterator)
       , callback(_callback) {};
       

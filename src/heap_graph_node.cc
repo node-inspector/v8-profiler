@@ -10,124 +10,119 @@ namespace nodex {
   using v8::Object;
   using v8::ObjectTemplate;
   using v8::FunctionTemplate;
-  using v8::Persistent;
   using v8::String;
   using v8::Value;
   
 
-  Persistent<ObjectTemplate> GraphNode::graph_node_template_;
-  Persistent<Object> GraphNode::graph_node_cache;
+  Nan::Persistent<ObjectTemplate> GraphNode::graph_node_template_;
+  Nan::Persistent<Object> GraphNode::graph_node_cache;
 
   void GraphNode::Initialize () {
-    NanScope();
+    Nan::HandleScope scope;
     
-    Local<FunctionTemplate> f = NanNew<FunctionTemplate>();
+    Local<FunctionTemplate> f = Nan::New<FunctionTemplate>();
     Local<ObjectTemplate> o = f->InstanceTemplate();
-    Local<Object> _cache = NanNew<Object>();
+    Local<Object> _cache = Nan::New<Object>();
     o->SetInternalFieldCount(1);
 #if (NODE_MODULE_VERSION <= 0x000B)
-    NODE_SET_METHOD(o, "getHeapValue", GraphNode::GetHeapValue);
+    Nan::SetMethod(o, "getHeapValue", GraphNode::GetHeapValue);
 #endif
-    o->SetAccessor(NanNew<String>("children"), GraphNode::GetChildren);
-    NanAssignPersistent(graph_node_template_, o);
-    NanAssignPersistent(graph_node_cache, _cache);
+    Nan::SetAccessor(o, Nan::New<String>("children").ToLocalChecked(), GraphNode::GetChildren);
+    graph_node_template_.Reset(o);
+    graph_node_cache.Reset(_cache);
   }
 
 #if (NODE_MODULE_VERSION <= 0x000B)
   NAN_METHOD(GraphNode::GetHeapValue) {
-    NanScope();
-
-    void* ptr = NanGetInternalFieldPointer(args.This(), 0);
+    void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
-    NanReturnValue(node->GetHeapValue());
+    info.GetReturnValue().Set(node->GetHeapValue());
   }
 #endif
   
   NAN_GETTER(GraphNode::GetChildren) {
-    NanScope();
-
-    void* ptr = NanGetInternalFieldPointer(args.This(), 0);
+    void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
     uint32_t count = node->GetChildrenCount();
-    Local<Array> children = NanNew<Array>(count);
+    Local<Array> children = Nan::New<Array>(count);
     for (uint32_t index = 0; index < count; ++index) {
       Handle<Value> child = GraphEdge::New(node->GetChild(index));
       children->Set(index, child);
     }
-    args.This()->Set(NanNew<String>("children"), children);
-    NanReturnValue(children);
+    info.This()->Set(Nan::New<String>("children").ToLocalChecked(), children);
+    info.GetReturnValue().Set(children);
   }
 
   Handle<Value> GraphNode::New(const HeapGraphNode* node) {
-    NanEscapableScope();
+    Nan::EscapableHandleScope scope;
 
     if (graph_node_template_.IsEmpty()) {
       GraphNode::Initialize();
     }
 
     Local<Object> graph_node;
-    Local<Object> _cache = NanNew(graph_node_cache);
+    Local<Object> _cache = Nan::New(graph_node_cache);
     int32_t _id = node->GetId();
     if (_cache->Has(_id)) {
       graph_node = _cache->Get(_id)->ToObject();
     } else {
-      graph_node = NanNew(graph_node_template_)->NewInstance();
-      NanSetInternalFieldPointer(graph_node, 0, const_cast<HeapGraphNode*>(node));
+      graph_node = Nan::New(graph_node_template_)->NewInstance();
+      Nan::SetInternalFieldPointer(graph_node, 0, const_cast<HeapGraphNode*>(node));
 
       Local<Value> type;
       switch (node->GetType()) {
         case HeapGraphNode::kArray :
-          type = NanNew<String>("Array");
+          type = Nan::New<String>("Array").ToLocalChecked();
           break;
         case HeapGraphNode::kString :
-          type = NanNew<String>("String");
+          type = Nan::New<String>("String").ToLocalChecked();
           break;
         case HeapGraphNode::kObject :
-          type = NanNew<String>("Object");
+          type = Nan::New<String>("Object").ToLocalChecked();
           break;  
         case HeapGraphNode::kCode :
-          type = NanNew<String>("Code");
+          type = Nan::New<String>("Code").ToLocalChecked();
           break;
         case HeapGraphNode::kClosure :
-          type = NanNew<String>("Closure");
+          type = Nan::New<String>("Closure").ToLocalChecked();
           break;
         case HeapGraphNode::kRegExp :
-          type = NanNew<String>("RegExp");
+          type = Nan::New<String>("RegExp").ToLocalChecked();
           break;
         case HeapGraphNode::kHeapNumber :
-          type = NanNew<String>("HeapNumber");
+          type = Nan::New<String>("HeapNumber").ToLocalChecked();
           break;
         case HeapGraphNode::kNative :
-          type = NanNew<String>("Native");
+          type = Nan::New<String>("Native").ToLocalChecked();
           break;
         case HeapGraphNode::kSynthetic :
-          type = NanNew<String>("Synthetic");
+          type = Nan::New<String>("Synthetic").ToLocalChecked();
           break;
 #if (NODE_MODULE_VERSION > 0x000B)
         case HeapGraphNode::kConsString :
-          type = NanNew<String>("ConsString");
+          type = Nan::New<String>("ConsString").ToLocalChecked();
           break;
         case HeapGraphNode::kSlicedString :
-          type = NanNew<String>("SlicedString");
+          type = Nan::New<String>("SlicedString").ToLocalChecked();
           break;
 #endif
         default :
-          type = NanNew<String>("Hidden");
+          type = Nan::New<String>("Hidden").ToLocalChecked();
       }
       Handle<Value> name = node->GetName();
-      Local<Value> id = NanNew<Number>(_id);
-      graph_node->Set(NanNew<String>("type"), type);
-      graph_node->Set(NanNew<String>("name"), name);
-      graph_node->Set(NanNew<String>("id"), id);
+      Local<Value> id = Nan::New<Number>(_id);
+      graph_node->Set(Nan::New<String>("type").ToLocalChecked(), type);
+      graph_node->Set(Nan::New<String>("name").ToLocalChecked(), name);
+      graph_node->Set(Nan::New<String>("id").ToLocalChecked(), id);
       
 #if (NODE_MODULE_VERSION > 0x000B)
-      Handle<Value> shallowSize = NanNew<Number>(node->GetShallowSize());
-      graph_node->Set(NanNew<String>("shallowSize"), shallowSize);
+      Handle<Value> shallowSize = Nan::New<Number>(node->GetShallowSize());
+      graph_node->Set(Nan::New<String>("shallowSize").ToLocalChecked(), shallowSize);
 #endif
 
       _cache->Set(_id, graph_node);
     }
 
-    return NanEscapeScope(graph_node);
+    return scope.Escape(graph_node);
   }
 }

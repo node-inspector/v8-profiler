@@ -13,8 +13,8 @@ namespace nodex {
       static void Initialize();
       static NAN_METHOD(GetHeapValue);
       static NAN_GETTER(GetChildren);
-      static v8::Persistent<v8::ObjectTemplate> graph_node_template_;
-      static v8::Persistent<v8::Object> graph_node_cache;
+      static Nan::Persistent<v8::ObjectTemplate> graph_node_template_;
+      static Nan::Persistent<v8::Object> graph_node_cache;
   };
 } //namespace nodex
 #endif  // NODE_GRAPH_NODE_

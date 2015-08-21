@@ -11,45 +11,45 @@ namespace nodex {
   using v8::Value;
 
   Handle<Value> GraphEdge::New(const HeapGraphEdge* node) {
-    NanEscapableScope();
+    Nan::EscapableHandleScope scope;
     
-    Local<Object> graph_edge = NanNew<Object>();
+    Local<Object> graph_edge = Nan::New<Object>();
 
     Local<Value> type;
     switch (node->GetType()) {
       case HeapGraphEdge::kContextVariable :
-        type = NanNew<String>("ContextVariable");
+        type = Nan::New<String>("ContextVariable").ToLocalChecked();
         break;
       case HeapGraphEdge::kElement :
-        type = NanNew<String>("Element");
+        type = Nan::New<String>("Element").ToLocalChecked();
         break;
       case HeapGraphEdge::kProperty :
-        type = NanNew<String>("Property");
+        type = Nan::New<String>("Property").ToLocalChecked();
         break;
       case HeapGraphEdge::kInternal :
-        type = NanNew<String>("Internal");
+        type = Nan::New<String>("Internal").ToLocalChecked();
         break;
       case HeapGraphEdge::kHidden :
-        type = NanNew<String>("Hidden");
+        type = Nan::New<String>("Hidden").ToLocalChecked();
         break;
       case HeapGraphEdge::kShortcut :
-        type = NanNew<String>("Shortcut");
+        type = Nan::New<String>("Shortcut").ToLocalChecked();
         break;
       case HeapGraphEdge::kWeak :
-        type = NanNew<String>("Weak");
+        type = Nan::New<String>("Weak").ToLocalChecked();
         break;
       default :
-        type = NanNew<String>("Undefined");
+        type = Nan::New<String>("Undefined").ToLocalChecked();
     }
     Handle<Value> name = node->GetName();
     Handle<Value> from = GraphNode::New(node->GetFromNode());
     Handle<Value> to = GraphNode::New(node->GetToNode());
 
-    graph_edge->Set(NanNew<String>("type"), type);
-    graph_edge->Set(NanNew<String>("name"), name);
-    graph_edge->Set(NanNew<String>("from"), from);
-    graph_edge->Set(NanNew<String>("to"), to);
+    graph_edge->Set(Nan::New<String>("type").ToLocalChecked(), type);
+    graph_edge->Set(Nan::New<String>("name").ToLocalChecked(), name);
+    graph_edge->Set(Nan::New<String>("from").ToLocalChecked(), from);
+    graph_edge->Set(Nan::New<String>("to").ToLocalChecked(), to);
 
-    return NanEscapeScope(graph_edge);
+    return scope.Escape(graph_edge);
   }
 }

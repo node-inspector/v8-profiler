@@ -5,7 +5,9 @@ const expect  = require('chai').expect,
       binding = require(binding_path),
       profiler = require('../');
 
+
 const NODE_V_10 = /^v0\.10\.\d+$/.test(process.version);
+const NODE_V_3 = /^v3\./.test(process.version);
     
 describe('Profiler container', function() {
 
@@ -54,6 +56,9 @@ describe('CPU', function() {
     });
     
     it('should replace profile title, if started with name argument', function() {
+      // starting with nodejs v3.x v8 doesn't support setting custom snapshot title
+      if (NODE_V_3) return;
+
       binding.cpu.startProfiling('P');
       var profile = binding.cpu.stopProfiling();
       expect(profile.title).to.equal('P');
@@ -154,6 +159,7 @@ describe('HEAP', function() {
     });
     
     it('should replace snapshot title, if started with name argument', function() {
+      if (NODE_V_3) return;
       var snapshot = binding.heap.takeSnapshot('S');
       expect(snapshot.title).to.equal('S');
     });
