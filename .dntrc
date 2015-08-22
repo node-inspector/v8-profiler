@@ -1,0 +1,21 @@
+## DNT config file
+## see https://github.com/rvagg/dnt
+
+NODE_VERSIONS="\
+  v0.10.40     \
+  v0.12.7      \
+"
+IOJS_VERSIONS="\
+  v1.8.4 \
+  v2.5.0 \
+  v3.1.0 \
+"
+OUTPUT_PREFIX="v8-profiler-"
+TEST_CMD="\
+  cd /dnt/ && \
+  npm install && \
+  node_modules/.bin/node-pre-gyp rebuild --nodedir=/usr/src/node --build-from-source && \
+  npm test 
+"
+# for mocha
+LOG_OK_CMD="tail -2 | sed 's/^.*passing.*$/ok/' | head -1"

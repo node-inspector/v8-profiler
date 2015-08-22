@@ -10,9 +10,9 @@ namespace nodex {
   using v8::String;
   using v8::Value;
 
-  Handle<Value> GraphEdge::New(const HeapGraphEdge* node) {
+  Local<Value> GraphEdge::New(const HeapGraphEdge* node) {
     Nan::EscapableHandleScope scope;
-    
+
     Local<Object> graph_edge = Nan::New<Object>();
 
     Local<Value> type;
@@ -41,9 +41,13 @@ namespace nodex {
       default :
         type = Nan::New<String>("Undefined").ToLocalChecked();
     }
-    Handle<Value> name = node->GetName();
-    Handle<Value> from = GraphNode::New(node->GetFromNode());
-    Handle<Value> to = GraphNode::New(node->GetToNode());
+#if (NODE_MODULE_VERSION >= 45)
+    Local<Value> name = node->GetName();
+#else
+    Local<Value> name = Nan::New<Value>(node->GetName());
+#endif
+    Local<Value> from = GraphNode::New(node->GetFromNode());
+    Local<Value> to = GraphNode::New(node->GetToNode());
 
     graph_edge->Set(Nan::New<String>("type").ToLocalChecked(), type);
     graph_edge->Set(Nan::New<String>("name").ToLocalChecked(), name);

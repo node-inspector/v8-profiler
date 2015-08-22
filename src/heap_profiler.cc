@@ -18,12 +18,12 @@ namespace nodex {
 
   HeapProfiler::HeapProfiler() {}
   HeapProfiler::~HeapProfiler() {}
-  
+
   class ActivityControlAdapter : public ActivityControl {
     public:
-      ActivityControlAdapter(Handle<Value> progress)
-        : reportProgress(Handle<Function>::Cast(progress)),
-          abort(Nan::False()) 
+      ActivityControlAdapter(Local<Value> progress)
+        : reportProgress(Local<Function>::Cast(progress)),
+          abort(Nan::False())
       {}
 
       ControlOption ReportProgressValue(int done, int total) {
@@ -44,27 +44,27 @@ namespace nodex {
       }
 
     private:
-      Handle<Function> reportProgress; 
-      Handle<Value> abort;
+      Local<Function> reportProgress;
+      Local<Value> abort;
   };
-  
-  void HeapProfiler::Initialize (Handle<Object> target) {
+
+  void HeapProfiler::Initialize (Local<Object> target) {
     Nan::HandleScope scope;
-    
+
     Local<Object> heapProfiler = Nan::New<Object>();
     Local<Array> snapshots = Nan::New<Array>();
-    
-    Nan::SetMethod(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);    
+
+    Nan::SetMethod(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);
     Nan::SetMethod(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
     Nan::SetMethod(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
     Nan::SetMethod(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
     Nan::SetMethod(heapProfiler, "getObjectByHeapObjectId", HeapProfiler::GetObjectByHeapObjectId);
     heapProfiler->Set(Nan::New<String>("snapshots").ToLocalChecked(), snapshots);
-    
+
     Snapshot::snapshots.Reset(snapshots);
     target->Set(Nan::New<String>("heap").ToLocalChecked(), heapProfiler);
   }
-  
+
   NAN_METHOD(HeapProfiler::TakeSnapshot) {
     ActivityControlAdapter* control = NULL;
     Local<String> title = Nan::EmptyString();
@@ -90,7 +90,7 @@ namespace nodex {
         }
       }
     }
-    
+
 
 #if (NODE_MODULE_VERSION > 0x002C)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(control);
@@ -98,28 +98,28 @@ namespace nodex {
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(title, control);
 #else
     const HeapSnapshot* snapshot = v8::HeapProfiler::TakeSnapshot(title, HeapSnapshot::kFull, control);
-#endif    
-    
+#endif
+
     info.GetReturnValue().Set(Snapshot::New(snapshot));
   }
-  
+
   NAN_METHOD(HeapProfiler::StartTrackingHeapObjects) {
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
 #else
     v8::HeapProfiler::StartHeapObjectsTracking();
 #endif
-    
+
     return;
   }
-  
+
   NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {
     if (info.Length() < 1) {
       return Nan::ThrowError("Invalid number of arguments");
     } else if (!info[0]->IsNumber()) {
       return Nan::ThrowTypeError("Arguments must be a number");
     }
-    
+
     SnapshotObjectId id = info[0]->Uint32Value();
     Local<Value> object;
 #if (NODE_MODULE_VERSION > 0x000B)
@@ -128,9 +128,9 @@ namespace nodex {
     Local<Array> snapshots = Local<Array>::Cast(info.This()->Get(Nan::New<String>("snapshots").ToLocalChecked()));
     Local<Object> snapshot;
     uint32_t length = snapshots->Length();
-    
+
     if (length == 0) return;
-    
+
     for (uint32_t i = 0; i < length; ++i) {
       snapshot = snapshots->Get(i)->ToObject();
       Local<Value> argv[1] = { info[0] };
@@ -158,7 +158,7 @@ namespace nodex {
       info.GetReturnValue().Set(Nan::New<String>("Preview is not available").ToLocalChecked());
     }
   }
-  
+
   NAN_METHOD(HeapProfiler::StopTrackingHeapObjects) {
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
@@ -166,7 +166,7 @@ namespace nodex {
     v8::HeapProfiler::StopHeapObjectsTracking();
 #endif
   }
-  
+
   NAN_METHOD(HeapProfiler::GetHeapStats) {
     if (info.Length() < 2) {
       return Nan::ThrowError("Invalid number of arguments");
@@ -176,7 +176,7 @@ namespace nodex {
 
     Local<Function> iterator = Local<Function>::Cast(info[0]);
     Local<Function> callback = Local<Function>::Cast(info[1]);
-    
+
     OutputStreamAdapter* stream = new OutputStreamAdapter(iterator, callback);
 #if (NODE_MODULE_VERSION > 0x000B)
     SnapshotObjectId ID = v8::Isolate::GetCurrent()->GetHeapProfiler()->GetHeapStats(stream);

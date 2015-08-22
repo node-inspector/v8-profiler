@@ -8,7 +8,7 @@ namespace nodex {
 
   class GraphNode {
     public:
-      static v8::Handle<v8::Value> New(const v8::HeapGraphNode* node);
+      static v8::Local<v8::Value> New(const v8::HeapGraphNode* node);
     private:
       static void Initialize();
       static NAN_METHOD(GetHeapValue);

@@ -8,7 +8,7 @@ namespace nodex {
 
   class Profile {
    public:
-    static v8::Handle<v8::Value> New(const v8::CpuProfile* node);
+    static v8::Local<v8::Value> New(const v8::CpuProfile* node);
     static Nan::Persistent<v8::Array> profiles;
    private:
     static NAN_METHOD(Delete);

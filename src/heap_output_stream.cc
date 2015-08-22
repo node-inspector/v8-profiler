@@ -21,7 +21,7 @@ namespace nodex {
       Nan::ThrowError(try_catch.Exception());
     }
   }
-      
+
   int OutputStreamAdapter::GetChunkSize() {
     return 51200;
   }
@@ -29,7 +29,7 @@ namespace nodex {
   OutputStream::WriteResult OutputStreamAdapter::WriteAsciiChunk(char* data, int size) {
     Nan::HandleScope scope;
 
-    Handle<Value> argv[2] = {
+    Local<Value> argv[2] = {
       Nan::New<String>(data, size).ToLocalChecked(),
       Nan::New<Integer>(size)
     };
@@ -41,13 +41,13 @@ namespace nodex {
       Nan::ThrowError(try_catch.Exception());
       return kAbort;
     }
-    
+
     return abort->IsFalse() ? kAbort : kContinue;
   }
-  
+
   OutputStream::WriteResult OutputStreamAdapter::WriteHeapStatsChunk(HeapStatsUpdate* data, int count) {
     Nan::HandleScope scope;
-    
+
     Local<Array> samples = Nan::New<Array>();
     for (int index = 0; index < count; index++) {
       int offset = index * 3;

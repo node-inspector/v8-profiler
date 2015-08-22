@@ -6,6 +6,13 @@ os:
   - linux
   - osx
 
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+
 env:
   matrix:
     - export NODE_VERSION="0.10"
@@ -33,6 +40,7 @@ before_install:
   - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 
 install:
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
   - npm install --build-from-source
   - npm test
 

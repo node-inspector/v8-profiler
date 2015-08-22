@@ -14,7 +14,7 @@ namespace nodex {
   uint32_t ProfileNode::UIDCounter = 1;
 
 #if (NODE_MODULE_VERSION >= 42)
-  Handle<Value> ProfileNode::GetLineTicks_(const CpuProfileNode* node) {
+  Local<Value> ProfileNode::GetLineTicks_(const CpuProfileNode* node) {
     Nan::EscapableHandleScope scope;
 
     uint32_t count = node->GetHitLineCount();
@@ -39,23 +39,23 @@ namespace nodex {
     return scope.Escape(lineTicks);
   }
 #endif
-  
-  Handle<Value> ProfileNode::New (const CpuProfileNode* node) {
+
+  Local<Value> ProfileNode::New (const CpuProfileNode* node) {
     Nan::EscapableHandleScope scope;
-    
+
     int32_t count = node->GetChildrenCount();
     Local<Object> profile_node = Nan::New<Object>();
     Local<Array> children = Nan::New<Array>(count);
-    
+
     for (int32_t index = 0; index < count; index++) {
       children->Set(index, ProfileNode::New(node->GetChild(index)));
     }
-    
+
     profile_node->Set(Nan::New<String>("functionName").ToLocalChecked(),  node->GetFunctionName());
     profile_node->Set(Nan::New<String>("url").ToLocalChecked(),           node->GetScriptResourceName());
     profile_node->Set(Nan::New<String>("lineNumber").ToLocalChecked(),    Nan::New<Integer>(node->GetLineNumber()));
     profile_node->Set(Nan::New<String>("callUID").ToLocalChecked(),       Nan::New<Number>(node->GetCallUid()));
-#if (NODE_MODULE_VERSION > 0x000B)      
+#if (NODE_MODULE_VERSION > 0x000B)
     profile_node->Set(Nan::New<String>("bailoutReason").ToLocalChecked(), Nan::New<String>(node->GetBailoutReason()).ToLocalChecked());
     profile_node->Set(Nan::New<String>("id").ToLocalChecked(),            Nan::New<Integer>(node->GetNodeId()));
     profile_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),      Nan::New<Integer>(node->GetScriptId()));
@@ -64,12 +64,12 @@ namespace nodex {
     profile_node->Set(Nan::New<String>("bailoutReason").ToLocalChecked(), Nan::New<String>("no reason").ToLocalChecked());
     profile_node->Set(Nan::New<String>("id").ToLocalChecked(),            Nan::New<Integer>(UIDCounter++));
     //TODO(3y3): profile_node->Set(Nan::New<String>("scriptId").ToLocalChecked(),      Nan::New<Integer>(node->GetScriptId()));
-    profile_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),      Nan::New<Integer>(node->GetSelfSamplesCount()));
+    profile_node->Set(Nan::New<String>("hitCount").ToLocalChecked(),      Nan::New<Integer>(static_cast<uint32_t>(node->GetSelfSamplesCount())));
 #endif
     profile_node->Set(Nan::New<String>("children").ToLocalChecked(),      children);
 
 #if (NODE_MODULE_VERSION >= 42)
-    Handle<Value> lineTicks = GetLineTicks_(node);
+    Local<Value> lineTicks = GetLineTicks_(node);
     if (!lineTicks->IsNull()) {
       profile_node->Set(Nan::New<String>("lineTicks").ToLocalChecked(), lineTicks);
     }

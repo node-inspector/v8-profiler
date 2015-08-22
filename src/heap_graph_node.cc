@@ -12,15 +12,18 @@ namespace nodex {
   using v8::FunctionTemplate;
   using v8::String;
   using v8::Value;
-  
+
 
   Nan::Persistent<ObjectTemplate> GraphNode::graph_node_template_;
   Nan::Persistent<Object> GraphNode::graph_node_cache;
 
+  NAN_METHOD(GraphNode_EmptyMethod) {
+  }
+
   void GraphNode::Initialize () {
     Nan::HandleScope scope;
-    
-    Local<FunctionTemplate> f = Nan::New<FunctionTemplate>();
+
+    Local<FunctionTemplate> f = Nan::New<FunctionTemplate>(GraphNode_EmptyMethod);
     Local<ObjectTemplate> o = f->InstanceTemplate();
     Local<Object> _cache = Nan::New<Object>();
     o->SetInternalFieldCount(1);
@@ -36,24 +39,24 @@ namespace nodex {
   NAN_METHOD(GraphNode::GetHeapValue) {
     void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
-    info.GetReturnValue().Set(node->GetHeapValue());
+    info.GetReturnValue().Set(Nan::New(node->GetHeapValue()));
   }
 #endif
-  
+
   NAN_GETTER(GraphNode::GetChildren) {
     void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
     uint32_t count = node->GetChildrenCount();
     Local<Array> children = Nan::New<Array>(count);
     for (uint32_t index = 0; index < count; ++index) {
-      Handle<Value> child = GraphEdge::New(node->GetChild(index));
+      Local<Value> child = GraphEdge::New(node->GetChild(index));
       children->Set(index, child);
     }
     info.This()->Set(Nan::New<String>("children").ToLocalChecked(), children);
     info.GetReturnValue().Set(children);
   }
 
-  Handle<Value> GraphNode::New(const HeapGraphNode* node) {
+  Local<Value> GraphNode::New(const HeapGraphNode* node) {
     Nan::EscapableHandleScope scope;
 
     if (graph_node_template_.IsEmpty()) {
@@ -79,7 +82,7 @@ namespace nodex {
           break;
         case HeapGraphNode::kObject :
           type = Nan::New<String>("Object").ToLocalChecked();
-          break;  
+          break;
         case HeapGraphNode::kCode :
           type = Nan::New<String>("Code").ToLocalChecked();
           break;
@@ -109,14 +112,18 @@ namespace nodex {
         default :
           type = Nan::New<String>("Hidden").ToLocalChecked();
       }
-      Handle<Value> name = node->GetName();
+#if (NODE_MODULE_VERSION >= 45)
+      Local<String> name = node->GetName();
+#else
+      Local<String> name = Nan::New<String>(node->GetName());
+#endif
       Local<Value> id = Nan::New<Number>(_id);
       graph_node->Set(Nan::New<String>("type").ToLocalChecked(), type);
       graph_node->Set(Nan::New<String>("name").ToLocalChecked(), name);
       graph_node->Set(Nan::New<String>("id").ToLocalChecked(), id);
-      
+
 #if (NODE_MODULE_VERSION > 0x000B)
-      Handle<Value> shallowSize = Nan::New<Number>(node->GetShallowSize());
+      Local<Value> shallowSize = Nan::New<Number>(node->GetShallowSize());
       graph_node->Set(Nan::New<String>("shallowSize").ToLocalChecked(), shallowSize);
 #endif
 
