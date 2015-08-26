@@ -1,5 +1,5 @@
+sudo: false
 language: cpp
-
 compiler: gcc
 
 os:
@@ -11,20 +11,28 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+      - gcc-4.9
+      - g++-4.9
 
 env:
   matrix:
     - export NODE_VERSION="0.10"
-    - export NODE_VERSION="0.11"
     - export NODE_VERSION="0.12"
-    - export NODE_VERSION="1"
-    - export NODE_VERSION="2"
-    - export NODE_VERSION="3"
+    - export NODE_VERSION="iojs-1"
+    - export NODE_VERSION="iojs-2"
+    - export NODE_VERSION="iojs-3"
   global:
     - node_pre_gyp_region="eu-central-1"
 
+git:
+  depth: 1
+
 before_install:
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export CC=/usr/bin/gcc-4.9;
+      export CXX=/usr/bin/g++-4.9;
+    fi
+
   - rm -rf ~/.nvm/ && git clone --depth 1 "https://github.com/creationix/nvm.git" ~/.nvm
   - source ~/.nvm/nvm.sh
   - nvm install $NODE_VERSION
@@ -32,7 +40,7 @@ before_install:
 
   - export PATH="./node_modules/.bin/:$PATH"
 
-  - npm install -g node-gyp
+  - npm install -g node-gyp@latest
 
   - PUBLISH_BINARY=false
   - if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=true; fi;
@@ -40,7 +48,6 @@ before_install:
   - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 
 install:
-  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
   - npm install --build-from-source
   - npm test
 

@@ -5,26 +5,24 @@ environment:
     secure: jJxKoyWputzRz2EjAT9i/vBzYt2+lcjKZ5D6O5TBaS9+anpYHn2XWbOut5dkOgh0
   node_pre_gyp_region: eu-central-1
   matrix:
-    - NODE_VERSION: 1
+    - NODE_VERSION: 3
       platform: x64
-    - NODE_VERSION: 1
-      platform: x86
-    - NODE_VERSION: 2
-      platform: x64
-    - NODE_VERSION: 2
-      platform: x86
     - NODE_VERSION: 3
       platform: x86
+    - NODE_VERSION: 2
+      platform: x64
+    - NODE_VERSION: 2
+      platform: x86
+    - NODE_VERSION: 1
+      platform: x64
+    - NODE_VERSION: 1
+      platform: x86
     - NODE_VERSION: 0.12
       platform: x64
     - NODE_VERSION: 0.12
       platform: x86
-    - NODE_VERSION: 0.11
-      platform: x64
     - NODE_VERSION: 0.10
       platform: x64
-    - NODE_VERSION: 0.11
-      platform: x86
     - NODE_VERSION: 0.10
       platform: x86
 
@@ -34,10 +32,10 @@ install:
   - SET PATH=%cd%\node_modules\.bin\;%PATH%
 
   - ps: Update-NodeJsInstallation (Get-NodeJsLatestBuild $env:NODE_VERSION) $env:platform
-  
+
   - IF %NODE_VERSION% LSS 1 npm -g install npm
   - IF %NODE_VERSION% LSS 1 set PATH=%APPDATA%\npm;%PATH%
-  
+
   # Check if new tag released and publish binary in this case.
   - SET PUBLISH_BINARY=false
   - git describe --tags --always HEAD > _git_tag.tmp
