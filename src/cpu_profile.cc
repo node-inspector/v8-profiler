@@ -87,15 +87,18 @@ namespace nodex {
     Local<Value> start_time = Nan::New<Number>(node->GetStartTime()/1000000);
     Local<Value> end_time = Nan::New<Number>(node->GetEndTime()/1000000);
     Local<Array> samples = Nan::New<Array>();
+    Local<Array> timestamps = Nan::New<Array>();
 
     uint32_t count = node->GetSamplesCount();
     for (uint32_t index = 0; index < count; ++index) {
       samples->Set(index, Nan::New<Integer>(node->GetSample(index)->GetNodeId()));
+      timestamps->Set(index, Nan::New<Number>(static_cast<double>(node->GetSampleTimestamp(index))));
     }
 
-    profile->Set(Nan::New<String>("startTime").ToLocalChecked(), start_time);
-    profile->Set(Nan::New<String>("endTime").ToLocalChecked(),   end_time);
-    profile->Set(Nan::New<String>("samples").ToLocalChecked(),   samples);
+    profile->Set(Nan::New<String>("startTime").ToLocalChecked(),   start_time);
+    profile->Set(Nan::New<String>("endTime").ToLocalChecked(),     end_time);
+    profile->Set(Nan::New<String>("samples").ToLocalChecked(),     samples);
+    profile->Set(Nan::New<String>("timestamps").ToLocalChecked(),  timestamps);
 #endif
 
     Local<Array> profiles = Nan::New<Array>(Profile::profiles);

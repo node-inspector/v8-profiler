@@ -81,7 +81,7 @@ describe('CPU', function() {
       var profile = binding.cpu.stopProfiling();
       var properties = NODE_V_10 ?
         ['delete', 'typeId', 'uid', 'title', 'head'] :
-        ['delete', 'typeId', 'uid', 'title', 'head', 'startTime', 'endTime', 'samples'];
+        ['delete', 'typeId', 'uid', 'title', 'head', 'startTime', 'endTime', 'samples', 'timestamps'];
         
       properties.forEach(function(prop) {
         expect(profile).to.have.property(prop);
