@@ -64,6 +64,7 @@ CpuProfile.prototype.getHeader = function() {
 }
 
 var startTime, endTime;
+var activeProfiles = [];
 
 var profiler = {
   /*HEAP PROFILER API*/
@@ -111,16 +112,37 @@ var profiler = {
   get profiles() { return binding.cpu.profiles; },
   
   startProfiling: function(name, recsamples) {
+    if (activeProfiles.length == 0 && typeof process._startProfilerIdleNotifier == "function")
+      process._startProfilerIdleNotifier();
+
+    name = name || "";
+
+    if (activeProfiles.indexOf(name) < 0)
+      activeProfiles.push(name)
+
     startTime = Date.now();
     binding.cpu.startProfiling(name, recsamples);
   },
   
   stopProfiling: function(name) {
+    var index = activeProfiles.indexOf(name);
+    if (name && index < 0)
+      return;
+
     var profile = binding.cpu.stopProfiling(name);
     endTime = Date.now();
     profile.__proto__ = CpuProfile.prototype;
     if (!profile.startTime) profile.startTime = startTime;
     if (!profile.endTime) profile.endTime = endTime;
+
+    if (name)
+      activeProfiles.splice(index, 1);
+    else
+      activeProfiles.length = activeProfiles.length - 1;
+
+    if (activeProfiles.length == 0 && typeof process._stopProfilerIdleNotifier == "function")
+      process._stopProfilerIdleNotifier();
+
     return profile;
   },
   
