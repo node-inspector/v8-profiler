@@ -48,7 +48,7 @@ namespace nodex {
       Local<Value> abort;
   };
 
-  void HeapProfiler::Initialize (Local<Object> target) {
+  void HeapProfiler::Initialize (Local<Object> exports) {
     Nan::HandleScope scope;
 
     Local<Object> heapProfiler = Nan::New<Object>();
@@ -62,10 +62,10 @@ namespace nodex {
     heapProfiler->Set(Nan::New<String>("snapshots").ToLocalChecked(), snapshots);
 
     Snapshot::snapshots.Reset(snapshots);
-    target->Set(Nan::New<String>("heap").ToLocalChecked(), heapProfiler);
+    exports->Set(Nan::New<String>("heap").ToLocalChecked(), heapProfiler);
   }
 
-  NAN_METHOD(HeapProfiler::TakeSnapshot) {
+  void HeapProfiler::TakeSnapshot(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     ActivityControlAdapter* control = NULL;
     Local<String> title = Nan::EmptyString();
     if (info.Length()) {
@@ -103,7 +103,7 @@ namespace nodex {
     info.GetReturnValue().Set(Snapshot::New(snapshot));
   }
 
-  NAN_METHOD(HeapProfiler::StartTrackingHeapObjects) {
+  void HeapProfiler::StartTrackingHeapObjects(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
 #else
@@ -113,7 +113,7 @@ namespace nodex {
     return;
   }
 
-  NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {
+  void HeapProfiler::GetObjectByHeapObjectId(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (info.Length() < 1) {
       return Nan::ThrowError("Invalid number of arguments");
     } else if (!info[0]->IsNumber()) {
@@ -159,7 +159,7 @@ namespace nodex {
     }
   }
 
-  NAN_METHOD(HeapProfiler::StopTrackingHeapObjects) {
+  void HeapProfiler::StopTrackingHeapObjects(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 #if (NODE_MODULE_VERSION > 0x000B)
     v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
 #else
@@ -167,7 +167,7 @@ namespace nodex {
 #endif
   }
 
-  NAN_METHOD(HeapProfiler::GetHeapStats) {
+  void HeapProfiler::GetHeapStats(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (info.Length() < 2) {
       return Nan::ThrowError("Invalid number of arguments");
     } else if (!info[0]->IsFunction() || !info[1]->IsFunction()) {

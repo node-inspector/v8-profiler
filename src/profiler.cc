@@ -4,10 +4,10 @@
 #include "cpu_profiler.h"
 
 namespace nodex {
-  void InitializeProfiler(v8::Local<v8::Object> target) {
+  void InitializeProfiler(v8::Local<v8::Object> exports) {
     Nan::HandleScope scope;
-    HeapProfiler::Initialize(target);
-    CpuProfiler::Initialize(target);
+    HeapProfiler::Initialize(exports);
+    CpuProfiler::Initialize(exports);
   }
 
   NODE_MODULE(profiler, InitializeProfiler)

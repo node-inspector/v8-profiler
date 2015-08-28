@@ -8,14 +8,14 @@
 namespace nodex {
   class CpuProfiler {
     public:
-      static void Initialize(v8::Local<v8::Object> target);
+      static void Initialize(v8::Local<v8::Object> exports);
 
       CpuProfiler();
       virtual ~CpuProfiler();
 
     protected:
-      static NAN_METHOD(StartProfiling);
-      static NAN_METHOD(StopProfiling);
+      static void StartProfiling(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void StopProfiling(const Nan::FunctionCallbackInfo<v8::Value>& info);
   };
 } //namespace nodex
 

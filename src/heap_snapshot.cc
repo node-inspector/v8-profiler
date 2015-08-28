@@ -22,7 +22,7 @@ namespace nodex {
   Nan::Persistent<ObjectTemplate> Snapshot::snapshot_template_;
   Nan::Persistent<Array> Snapshot::snapshots;
 
-  NAN_METHOD(Snapshot_EmptyMethod) {
+  void Snapshot_EmptyMethod(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   void Snapshot::Initialize () {
@@ -51,7 +51,7 @@ namespace nodex {
     }
   }
 
-  NAN_METHOD(Snapshot::GetNode) {
+  void Snapshot::GetNode(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (!info.Length()) {
       return Nan::ThrowError("No index specified");
     } else if (!info[0]->IsInt32()) {
@@ -63,7 +63,7 @@ namespace nodex {
     info.GetReturnValue().Set(GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetNode(index)));
   }
 
-  NAN_METHOD(Snapshot::GetNodeById) {
+  void Snapshot::GetNodeById(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     if (!info.Length()) {
       return Nan::ThrowError("No id specified");
     } else if (!info[0]->IsInt32()) {
@@ -75,7 +75,7 @@ namespace nodex {
     info.GetReturnValue().Set(GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetNodeById(id)));
   }
 
-  NAN_METHOD(Snapshot::Serialize) {
+  void Snapshot::Serialize(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     if (info.Length() < 2) {
       return Nan::ThrowError("Invalid number of arguments");
@@ -90,7 +90,7 @@ namespace nodex {
     static_cast<HeapSnapshot*>(ptr)->Serialize(stream, HeapSnapshot::kJSON);
   }
 
-  NAN_METHOD(Snapshot::Delete) {
+  void Snapshot::Delete(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     void* ptr = Nan::GetInternalFieldPointer(info.Holder(), 0);
     Local<Array> snapshots = Nan::New<Array>(Snapshot::snapshots);
 

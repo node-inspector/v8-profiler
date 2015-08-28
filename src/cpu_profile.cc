@@ -33,7 +33,7 @@ namespace nodex {
     profile_template_.Reset(o);
   }
 
-  NAN_METHOD(Profile::Delete) {
+void Profile::Delete(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     Local<Object> self = info.This();
     void* ptr = Nan::GetInternalFieldPointer(self, 0);
     Local<Array> profiles = Nan::New<Array>(Profile::profiles);
