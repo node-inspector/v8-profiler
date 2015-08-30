@@ -26,7 +26,7 @@ namespace nodex {
   void Profile::Initialize () {
     Nan::HandleScope scope;
 
-    Local<FunctionTemplate> f = Nan::New<FunctionTemplate>();
+    Local<FunctionTemplate> f = Nan::New<FunctionTemplate>(Profile_EmptyMethod);
     Local<ObjectTemplate> o = f->InstanceTemplate();
     o->SetInternalFieldCount(1);
     Nan::SetMethod(o, "delete", Profile::Delete);
