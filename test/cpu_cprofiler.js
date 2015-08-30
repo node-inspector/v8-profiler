@@ -220,6 +220,34 @@ describe('HEAP', function() {
       );
     });
     
+    it('should export itself to stream', function(done) {
+      var snapshot = profiler.takeSnapshot();
+      var fs = require('fs'),
+          ws = fs.createWriteStream('snapshot.json');
+      
+      snapshot.export(ws);
+      ws.on('finish', done);
+    });
+    
+    it('should pipe itself to stream', function(done) {
+      var snapshot = profiler.takeSnapshot();
+      var fs = require('fs'),
+          ws = fs.createWriteStream('snapshot.json')
+                 .on('finish', done);
+      
+      snapshot.export().pipe(ws);
+    });
+    
+    it('should export itself to callback', function(done) {
+      var snapshot = profiler.takeSnapshot();
+      
+      snapshot.export(function(err, result) {
+        expect(!err);
+        expect(typeof result == 'string');
+        done();
+      });
+    });
+    
   });
   
   function deleteAllSnapshots() {
