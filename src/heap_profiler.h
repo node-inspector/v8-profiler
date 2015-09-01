@@ -8,17 +8,17 @@
 namespace nodex {
   class HeapProfiler {
     public:
-      static void Initialize(v8::Local<v8::Object> target);
+      static void Initialize(v8::Local<v8::Object> exports);
 
       HeapProfiler();
       virtual ~HeapProfiler();
 
     protected:
-      static NAN_METHOD(TakeSnapshot);
-      static NAN_METHOD(StartTrackingHeapObjects);
-      static NAN_METHOD(StopTrackingHeapObjects);
-      static NAN_METHOD(GetHeapStats);
-      static NAN_METHOD(GetObjectByHeapObjectId);
+      static void TakeSnapshot(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void StartTrackingHeapObjects(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void StopTrackingHeapObjects(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void GetHeapStats(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void GetObjectByHeapObjectId(const Nan::FunctionCallbackInfo<v8::Value>& info);
     };
 } //namespace nodex
 

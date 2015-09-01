@@ -12,7 +12,7 @@ namespace nodex {
   CpuProfiler::CpuProfiler () {}
   CpuProfiler::~CpuProfiler () {}
 
-  void CpuProfiler::Initialize (Local<Object> target) {
+  void CpuProfiler::Initialize (Local<Object> exports) {
     Nan::HandleScope scope;
 
     Local<Object> cpuProfiler = Nan::New<Object>();
@@ -23,10 +23,10 @@ namespace nodex {
     cpuProfiler->Set(Nan::New<String>("profiles").ToLocalChecked(), profiles);
 
     Profile::profiles.Reset(profiles);
-    target->Set(Nan::New<String>("cpu").ToLocalChecked(), cpuProfiler);
+    exports->Set(Nan::New<String>("cpu").ToLocalChecked(), cpuProfiler);
   }
 
-  NAN_METHOD(CpuProfiler::StartProfiling) {
+  void CpuProfiler::StartProfiling(const Nan::FunctionCallbackInfo<v8::Value>& info) {
 #if (NODE_MODULE_VERSION > 0x000B)
     bool recsamples = true;
 #endif
@@ -65,7 +65,7 @@ namespace nodex {
 #endif
   }
 
-  NAN_METHOD(CpuProfiler::StopProfiling) {
+  void CpuProfiler::StopProfiling(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     const CpuProfile* profile;
 
     Local<String> title = Nan::EmptyString();

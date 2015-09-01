@@ -17,7 +17,7 @@ namespace nodex {
   Nan::Persistent<ObjectTemplate> GraphNode::graph_node_template_;
   Nan::Persistent<Object> GraphNode::graph_node_cache;
 
-  NAN_METHOD(GraphNode_EmptyMethod) {
+  void GraphNode_EmptyMethod(const Nan::FunctionCallbackInfo<v8::Value>& info) {
   }
 
   void GraphNode::Initialize () {
@@ -36,7 +36,7 @@ namespace nodex {
   }
 
 #if (NODE_MODULE_VERSION <= 0x000B)
-  NAN_METHOD(GraphNode::GetHeapValue) {
+  void GraphNode::GetHeapValue(const Nan::FunctionCallbackInfo<v8::Value>& info) {
     void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
     HeapGraphNode* node = static_cast<HeapGraphNode*>(ptr);
     info.GetReturnValue().Set(Nan::New(node->GetHeapValue()));

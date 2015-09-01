@@ -13,10 +13,10 @@ namespace nodex {
     private:
       static void Initialize();
       static NAN_GETTER(GetRoot);
-      static NAN_METHOD(GetNode);
-      static NAN_METHOD(GetNodeById);
-      static NAN_METHOD(Delete);
-      static NAN_METHOD(Serialize);
+      static void GetNode(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void GetNodeById(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void Delete(const Nan::FunctionCallbackInfo<v8::Value>& info);
+      static void Serialize(const Nan::FunctionCallbackInfo<v8::Value>& info);
       static Nan::Persistent<v8::ObjectTemplate> snapshot_template_;
   };
 } //namespace nodex
