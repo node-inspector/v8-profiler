@@ -137,6 +137,7 @@ var profiler = {
   takeSnapshot: function(name, control) {
     var snapshot = binding.heap.takeSnapshot.apply(null, arguments);
     snapshot.__proto__ = Snapshot.prototype;
+    snapshot.title = name;
     return snapshot;
   },
 

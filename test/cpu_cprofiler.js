@@ -81,7 +81,7 @@ describe('CPU', function() {
       var properties = NODE_V_010 ?
         ['delete', 'typeId', 'uid', 'title', 'head'] :
         ['delete', 'typeId', 'uid', 'title', 'head', 'startTime', 'endTime', 'samples', 'timestamps'];
-        
+
       properties.forEach(function(prop) {
         expect(profile).to.have.property(prop);
       });
@@ -162,42 +162,42 @@ describe('HEAP', function() {
     });
 
     it('should take snapshot without arguments', function() {
-      expect(binding.heap.takeSnapshot).to.not.throw();
+      expect(profiler.takeSnapshot).to.not.throw();
     });
 
     it('should cashe snapshots', function() {
-      expect(binding.heap.snapshots).to.have.length(1);
+      expect(profiler.snapshots).to.have.length(1);
     });
 
     it('should throw on take snapshot with wrong arguments', function() {
       expect(function() {
-        binding.heap.takeSnapshot(1);
+        profiler.takeSnapshot(1);
       }).to.throw();
       expect(function() {
-        binding.heap.takeSnapshot('name', 1);
+        profiler.takeSnapshot('name', 1);
       }).to.throw();
     });
 
     it('should replace snapshot title, if started with name argument', function() {
       if (NODE_V_3) return;
-      var snapshot = binding.heap.takeSnapshot('S');
+      var snapshot = profiler.takeSnapshot('S');
       expect(snapshot.title).to.equal('S');
     });
 
     it('should use control function, if started with function argument', function(done) {
-      binding.heap.takeSnapshot(function(progress, total) {
+      profiler.takeSnapshot(function(progress, total) {
         if (progress === total) done();
       });
     });
 
     it('should write heap stats', function(done) {
-      expect(binding.heap.startTrackingHeapObjects).to.not.throw();
-      binding.heap.getHeapStats(
+      expect(profiler.startTrackingHeapObjects).to.not.throw();
+      profiler.getHeapStats(
         function(samples) {
           expect(samples).to.instanceof(Array);
         },
         function() {
-          expect(binding.heap.stopTrackingHeapObjects).to.not.throw();
+          expect(profiler.stopTrackingHeapObjects).to.not.throw();
           done();
         }
       );
@@ -220,14 +220,14 @@ describe('HEAP', function() {
     });
 
     it('should delete itself from profiler cache', function() {
-      var snapshot = binding.heap.takeSnapshot();
+      var snapshot = profiler.takeSnapshot();
       var oldSnapshotsLength = binding.heap.snapshots.length;
       snapshot.delete();
       expect(binding.heap.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
     });
 
     it('should serialise itself', function(done) {
-      var snapshot = binding.heap.takeSnapshot();
+      var snapshot = profiler.takeSnapshot();
       var buffer = '';
       snapshot.serialize(
         function iterator(data, length) {

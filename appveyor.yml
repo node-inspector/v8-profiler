@@ -5,17 +5,13 @@ environment:
     secure: jJxKoyWputzRz2EjAT9i/vBzYt2+lcjKZ5D6O5TBaS9+anpYHn2XWbOut5dkOgh0
   node_pre_gyp_region: eu-central-1
   matrix:
-    - NODE_VERSION: 3
+    - NODE_VERSION: 4
+      platform: x64
+    - NODE_VERSION: 4
       platform: x64
     - NODE_VERSION: 3
-      platform: x86
-    - NODE_VERSION: 2
       platform: x64
-    - NODE_VERSION: 2
-      platform: x86
-    - NODE_VERSION: 1
-      platform: x64
-    - NODE_VERSION: 1
+    - NODE_VERSION: 3
       platform: x86
     - NODE_VERSION: 0.12
       platform: x64
@@ -47,7 +43,7 @@ build_script:
   - npm install --build-from-source --msvs_version=2013
 
 test_script:
-  - IF %NODE_VERSION% LSS 1 (npm test) ELSE (iojs --debug node_modules/mocha/bin/_mocha)
+  - IF %NODE_VERSION% LSS 1 (npm test) ELSE (IF %NODE_VERSION% LSS 4 (iojs --debug node_modules/mocha/bin/_mocha) ELSE (npm test))
 
 on_success:
   - IF %PUBLISH_BINARY% == true (node-pre-gyp package publish 2>&1)

@@ -18,9 +18,8 @@ env:
   matrix:
     - export NODE_VERSION="0.10"
     - export NODE_VERSION="0.12"
-    - export NODE_VERSION="iojs-1"
-    - export NODE_VERSION="iojs-2"
     - export NODE_VERSION="iojs-3"
+    - export NODE_VERSION="4"
   global:
     - node_pre_gyp_region="eu-central-1"
 
@@ -39,8 +38,6 @@ before_install:
   - nvm use $NODE_VERSION
 
   - export PATH="./node_modules/.bin/:$PATH"
-
-  - npm install -g node-gyp@latest
 
   - PUBLISH_BINARY=false
   - if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=true; fi;

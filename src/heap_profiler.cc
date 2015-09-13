@@ -71,7 +71,7 @@ namespace nodex {
     if (info.Length()) {
       if (info.Length()>1) {
         if (info[1]->IsFunction()) {
-          control = new ActivityControlAdapter(info[0]);
+          control = new ActivityControlAdapter(info[1]);
         } else if (!info[1]->IsUndefined()) {
           return Nan::ThrowTypeError("Wrong argument [1] type (wait Function)");
         }
