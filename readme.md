@@ -53,7 +53,7 @@ If callback will not be passed, `export` returns transform stream.
 
 ```js
 var fs = require('fs');
-var prifiler = require('v8-profiler');
+var profiler = require('v8-profiler');
 var snapshot1 = profiler.takeSnapshot();
 var snapshot2 = profiler.takeSnapshot();
 
@@ -82,7 +82,7 @@ snapshot2.export()
 
 ```js
 var fs = require('fs');
-var prifiler = require('v8-profiler');
+var profiler = require('v8-profiler');
 profiler.startProfiling('1', true);
 var profile1 = profiler.stopProfiling();
 profiler.startProfiling('2', true);
