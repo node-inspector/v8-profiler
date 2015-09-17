@@ -17,10 +17,7 @@
       "email": "3y3@bk.ru"
     }
   ],
-  "license": {
-    "name": "BSD",
-    "url": "https://github.com/node-inspector/v8-profiler/blob/master/LICENSE"
-  },
+  "license": "BSD-2-Clause",
   "binary": {
     "module_name" : "profiler",
     "module_path" : "./build/{module_name}/v{version}/{node_abi}-{platform}-{arch}/",
