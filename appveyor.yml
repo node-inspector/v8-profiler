@@ -8,7 +8,7 @@ environment:
     - NODE_VERSION: 4
       platform: x64
     - NODE_VERSION: 4
-      platform: x64
+      platform: x86
     - NODE_VERSION: 3
       platform: x64
     - NODE_VERSION: 3
