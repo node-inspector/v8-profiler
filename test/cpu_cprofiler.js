@@ -268,6 +268,7 @@ describe('HEAP', function() {
     });
 
     it('should compare itself with other snapshot', function() {
+      this.timeout(5000);
       var snapshot1 = profiler.takeSnapshot();
       var snapshot2 = profiler.takeSnapshot();
 
