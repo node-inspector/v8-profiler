@@ -185,8 +185,14 @@ describe('HEAP', function() {
     });
 
     it('should use control function, if started with function argument', function(done) {
+      // Fix for Windows
+      var checked = false;
       profiler.takeSnapshot(function(progress, total) {
-        if (progress === total) done();
+        if (progress === total) {
+          if (checked) return;
+          checked = true;
+          done();
+        }
       });
     });
 
@@ -259,6 +265,13 @@ describe('HEAP', function() {
         expect(typeof result == 'string');
         done();
       });
+    });
+
+    it('should compare itself with other snapshot', function() {
+      var snapshot1 = profiler.takeSnapshot();
+      var snapshot2 = profiler.takeSnapshot();
+
+      expect(snapshot1.compare.bind(snapshot1, snapshot2)).to.not.throw();
     });
 
   });
