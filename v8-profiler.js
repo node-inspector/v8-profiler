@@ -29,8 +29,8 @@ Snapshot.prototype.compare = function(other) {
   keys.forEach(function(key) {
     if (key in diff) return;
 
-    var selfCount = selfHist[key] || 0,
-        otherCount = otherHist[key] || 0;
+    var selfCount = selfCounts[key] || 0,
+        otherCount = otherCounts[key] || 0;
 
     diff[key] = otherCount - selfCount;
   });

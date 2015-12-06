@@ -97,7 +97,9 @@ profile1.export(function(error, result) {
 
 profile2.export()
   .pipe(fs.createWriteStream('profile2.json'))
-  .on('finish', profile2.delete);
+  .on('finish', function() {
+    profile2.delete();
+  });
 ```
 
 ## node-inspector
