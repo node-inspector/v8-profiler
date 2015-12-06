@@ -1,8 +1,3 @@
-/profiler.node
 build/*
 node_modules/*
-.lock-wscript
-*.swp
-*.swo
-.DS_Store
-node_modules
+npm-debug.log

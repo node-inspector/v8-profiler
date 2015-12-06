@@ -1,6 +1,10 @@
-/build
-/node_modules
-/test
+*.log
+build/!(profiler)
+node_modules
+test
+v8-profiler-*.tgz
+.gitattributes
 .gitignore
 .npmignore
 .travis.yml
+appveyor.yml

@@ -37,6 +37,10 @@ before_install:
   - nvm install $NODE_VERSION
   - nvm use $NODE_VERSION
 
+  - if [ $NODE_VERSION == "0.10" ]; then
+      npm -g install npm@latest-2;
+    fi
+
   - export PATH="./node_modules/.bin/:$PATH"
 
   - PUBLISH_BINARY=false
