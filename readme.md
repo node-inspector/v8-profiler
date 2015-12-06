@@ -24,9 +24,11 @@ var snapshot2 = profiler.takeSnapshot();
 profiler.deleteAllSnapshots();
 ```
 
-`startProfiling([name], [recsamples])` - start CPU profiling. `name` is optional argument, by default profile name will be constructed from his uid.
+`startProfiling([name], [recsamples])` - start CPU profiling. `name` is optional argument, by default profile name will be constructed from his uid. `recsamples` is true by default.
 
 `stopProfiling([name])` - returns new CPU Profile instance. There is no strictly described behavior for usage without `name` argument.
+
+`setSamplingInterval([num])` - Changes default CPU profiler sampling interval to the specified number of microseconds. Default interval is 1000us. This method must be called when there are no profiles being recorded. If called without arguments it resets interval to default.
 
 `deleteAllProfiles()` - works as described in name.
 

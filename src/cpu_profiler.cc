@@ -20,6 +20,7 @@ namespace nodex {
 
     Nan::SetMethod(cpuProfiler, "startProfiling", CpuProfiler::StartProfiling);
     Nan::SetMethod(cpuProfiler, "stopProfiling", CpuProfiler::StopProfiling);
+    Nan::SetMethod(cpuProfiler, "setSamplingInterval", CpuProfiler::SetSamplingInterval);
     cpuProfiler->Set(Nan::New<String>("profiles").ToLocalChecked(), profiles);
 
     Profile::profiles.Reset(profiles);
@@ -56,5 +57,11 @@ namespace nodex {
 #endif
 
     info.GetReturnValue().Set(Profile::New(profile));
+  }
+
+  NAN_METHOD(CpuProfiler::SetSamplingInterval) {
+#if (NODE_MODULE_VERSION > 0x000B)
+    v8::Isolate::GetCurrent()->GetCpuProfiler()->SetSamplingInterval(info[0]->Uint32Value());
+#endif
   }
 } //namespace nodex

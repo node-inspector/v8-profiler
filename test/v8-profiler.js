@@ -38,6 +38,17 @@ describe('v8-profiler', function() {
         var profile = profiler.stopProfiling();
         expect(profile.samples.length > 0).to.equal(true);
       });
+
+      it('should throw on setSamplingInterval if profile recording in progress', function() {
+        profiler.startProfiling();
+        expect(profiler.setSamplingInterval).to.throw(
+          'setSamplingInterval must be called when there are no profiles being recorded.');
+        profiler.stopProfiling();
+      });
+
+      it('should set sampling interval', function() {
+        profiler.setSamplingInterval(1000);
+      });
     });
 
     describe('Profile', function() {

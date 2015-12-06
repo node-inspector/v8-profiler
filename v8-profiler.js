@@ -244,6 +244,15 @@ var profiler = {
     return profile;
   },
 
+  setSamplingInterval: function(num) {
+    if (activeProfiles.length) {
+      throw new Error('setSamplingInterval must be called when there are no profiles being recorded.');
+    }
+
+    num = parseInt(num, 10) || 1000;
+    binding.cpu.setSamplingInterval(num);
+  },
+
   getProfile: function(index) {
     return binding.cpu.profiles[index];
   },
