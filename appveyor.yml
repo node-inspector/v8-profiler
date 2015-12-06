@@ -5,13 +5,13 @@ environment:
     secure: jJxKoyWputzRz2EjAT9i/vBzYt2+lcjKZ5D6O5TBaS9+anpYHn2XWbOut5dkOgh0
   node_pre_gyp_region: eu-central-1
   matrix:
-    - NODE_VERSION: 4
+    - NODE_VERSION: 5
       platform: x64
-    - NODE_VERSION: 4
+    - NODE_VERSION: 5
       platform: x86
-    - NODE_VERSION: 3
+    - NODE_VERSION: 4
       platform: x64
-    - NODE_VERSION: 3
+    - NODE_VERSION: 4
       platform: x86
     - NODE_VERSION: 0.12
       platform: x64
@@ -33,17 +33,13 @@ install:
   - IF %NODE_VERSION% LSS 1 set PATH=%APPDATA%\npm;%PATH%
 
   # Check if new tag released and publish binary in this case.
-  - SET PUBLISH_BINARY=false
-  - git describe --tags --always HEAD > _git_tag.tmp
-  - SET /p GIT_TAG=<_git_tag.tmp
-  - DEL _git_tag.tmp
-  - IF x%APPVEYOR_REPO_BRANCH% == x%GIT_TAG% (SET PUBLISH_BINARY=true)
+  - SET PUBLISH_BINARY=%APPVEYOR_REPO_TAG%
 
 build_script:
   - npm install --build-from-source --msvs_version=2013
 
 test_script:
-  - IF %NODE_VERSION% LSS 1 (npm test) ELSE (IF %NODE_VERSION% LSS 4 (iojs --debug node_modules/mocha/bin/_mocha) ELSE (npm test))
+  - npm test
 
 on_success:
   - IF %PUBLISH_BINARY% == true (node-pre-gyp package publish 2>&1)

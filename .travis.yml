@@ -18,8 +18,8 @@ env:
   matrix:
     - export NODE_VERSION="0.10"
     - export NODE_VERSION="0.12"
-    - export NODE_VERSION="iojs-3"
     - export NODE_VERSION="4"
+    - export NODE_VERSION="5"
   global:
     - node_pre_gyp_region="eu-central-1"
 
@@ -40,7 +40,7 @@ before_install:
   - export PATH="./node_modules/.bin/:$PATH"
 
   - PUBLISH_BINARY=false
-  - if [[ $TRAVIS_BRANCH == `git describe --tags --always HEAD` ]]; then PUBLISH_BINARY=true; fi;
+  - if [[ $TRAVIS_TAG ]]; then PUBLISH_BINARY=true; fi;
 
   - platform=$(uname -s | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/")
 
