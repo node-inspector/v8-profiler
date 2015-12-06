@@ -4,178 +4,181 @@ const expect  = require('chai').expect,
 const NODE_V_010 = /^v0\.10\.\d+$/.test(process.version);
 const NODE_V_3 = /^v3\./.test(process.version);
 
-describe('CPU', function() {
-  after(deleteAllProfiles);
+describe('v8-profiler', function() {
+  describe('CPU', function() {
+    after(deleteAllProfiles);
 
-  describe('Profiler', function() {
+    describe('Profiler', function() {
 
-    it('should start profiling', function() {
-      expect(profiler.startProfiling).to.not.throw();
-    });
+      it('should start profiling', function() {
+        expect(profiler.startProfiling).to.not.throw();
+      });
 
-    it('should stop profiling', function() {
-      expect(profiler.stopProfiling).to.not.throw();
-    });
+      it('should stop profiling', function() {
+        expect(profiler.stopProfiling).to.not.throw();
+      });
 
-    it('should cache profiles', function() {
-      expect(profiler.profiles).to.have.length(1);
-    });
+      it('should cache profiles', function() {
+        expect(profiler.profiles).to.have.length(1);
+      });
 
-    it('should replace profile title, if started with name argument', function() {
-      // starting with nodejs v3.x v8 doesn't support setting custom snapshot title
-      if (NODE_V_3) return;
+      it('should replace profile title, if started with name argument', function() {
+        // starting with nodejs v3.x v8 doesn't support setting custom snapshot title
+        if (NODE_V_3) return;
 
-      profiler.startProfiling('P');
-      var profile = profiler.stopProfiling();
-      expect(profile.title).to.equal('P');
-    });
+        profiler.startProfiling('P');
+        var profile = profiler.stopProfiling();
+        expect(profile.title).to.equal('P');
+      });
 
-    it('should record samples, if started with recsamples argument', function() {
-      if (NODE_V_010) return;
+      it('should record samples, if started with recsamples argument', function() {
+        if (NODE_V_010) return;
 
-      profiler.startProfiling(true);
-      var profile = profiler.stopProfiling();
-      expect(profile.samples.length > 0).to.equal(true);
-    });
-  });
-
-  describe('Profile', function() {
-    it('should export itself with callback', function() {
-      profiler.startProfiling('', true);
-      var profile = profiler.stopProfiling();
-      profile.export(function(error, result) {
-        var _result = JSON.parse(result);
-        expect(result).to.be.a('string');
-        expect(_result).to.be.an('object');
+        profiler.startProfiling(true);
+        var profile = profiler.stopProfiling();
+        expect(profile.samples.length > 0).to.equal(true);
       });
     });
 
-    it('should export itself with stream', function(done) {
-      profiler.startProfiling('', true);
-      var profile = profiler.stopProfiling();
-      var fs = require('fs'),
-          ws = fs.createWriteStream('profile.json');
-      profile.export().pipe(ws);
+    describe('Profile', function() {
+      it('should export itself with callback', function() {
+        profiler.startProfiling('', true);
+        var profile = profiler.stopProfiling();
+        profile.export(function(error, result) {
+          var _result = JSON.parse(result);
 
-      ws.on('finish', function() {
+          expect(result).to.be.a('string');
+          expect(_result).to.be.an('object');
+        });
+      });
+
+      it('should export itself with stream', function(done) {
+        profiler.startProfiling('', true);
+        var profile = profiler.stopProfiling();
+        var fs = require('fs'),
+            ws = fs.createWriteStream('profile.json');
+        profile.export().pipe(ws);
+
+        ws.on('finish', function() {
           fs.unlink('profile.json', done);
         });
-    });
-  });
-
-  function deleteAllProfiles() {
-    profiler.profiles.slice().forEach(function(profile) {
-      profile.delete();
-    });
-  }
-});
-
-describe('HEAP', function() {
-  after(deleteAllSnapshots);
-
-  describe('Profiler', function() {
-
-    it('should take snapshot without arguments', function() {
-      expect(profiler.takeSnapshot).to.not.throw();
-    });
-
-    it('should cache snapshots', function() {
-      expect(profiler.snapshots).to.have.length(1);
-    });
-
-    it('should replace snapshot title, if started with name argument', function() {
-      if (NODE_V_3) return;
-      var snapshot = profiler.takeSnapshot('S');
-      expect(snapshot.title).to.equal('S');
-    });
-
-    it('should use control function, if started with function argument', function(done) {
-      // Fix for Windows
-      var checked = false;
-      profiler.takeSnapshot(function(progress, total) {
-        if (progress === total) {
-          if (checked) return;
-          checked = true;
-          done();
-        }
       });
     });
 
-    it('should write heap stats', function(done) {
-      expect(profiler.startTrackingHeapObjects).to.not.throw();
-      profiler.getHeapStats(
-        function(samples) {
-          expect(samples).to.instanceof(Array);
-        },
-        function() {
-          expect(profiler.stopTrackingHeapObjects).to.not.throw();
-          done();
-        }
-      );
-    });
-
-    it('should return undefined for wrong params in getObjectByHeapObjectId', function() {
-      expect(profiler.getObjectByHeapObjectId('a')).to.be.equal(undefined);
-    })
-  });
-
-  describe('Snapshot', function() {
-
-    it('should delete itself from profiler cache', function() {
-      var snapshot = profiler.takeSnapshot();
-      var oldSnapshotsLength = profiler.snapshots.length;
-      snapshot.delete();
-      expect(profiler.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
-    });
-
-    it('should serialise itself', function(done) {
-      var snapshot = profiler.takeSnapshot();
-      var buffer = '';
-      snapshot.serialize(
-        function iterator(data, length) {
-          buffer += data;
-        },
-        function callback() {
-          expect(JSON.parse.bind(JSON, buffer)).to.not.throw();
-          done();
-        }
-      );
-    });
-
-    it('should pipe itself to stream', function(done) {
-      var snapshot = profiler.takeSnapshot();
-      var fs = require('fs'),
-          ws = fs.createWriteStream('snapshot.json')
-                 .on('finish', function() {
-                   fs.unlink('snapshot.json', done);
-                 });
-
-      snapshot.export().pipe(ws);
-    });
-
-    it('should export itself to callback', function(done) {
-      var snapshot = profiler.takeSnapshot();
-
-      snapshot.export(function(err, result) {
-        expect(!err);
-        expect(typeof result == 'string');
-        done();
+    function deleteAllProfiles() {
+      profiler.profiles.slice().forEach(function(profile) {
+        profile.delete();
       });
-    });
-
-    it('should compare itself with other snapshot', function() {
-      this.timeout(5000);
-      var snapshot1 = profiler.takeSnapshot();
-      var snapshot2 = profiler.takeSnapshot();
-
-      expect(snapshot1.compare.bind(snapshot1, snapshot2)).to.not.throw();
-    });
-
+    }
   });
 
-  function deleteAllSnapshots() {
-    profiler.snapshots.slice().forEach(function(snapshot) {
-      snapshot.delete();
+  describe('HEAP', function() {
+    after(deleteAllSnapshots);
+
+    describe('Profiler', function() {
+
+      it('should take snapshot without arguments', function() {
+        expect(profiler.takeSnapshot).to.not.throw();
+      });
+
+      it('should cache snapshots', function() {
+        expect(profiler.snapshots).to.have.length(1);
+      });
+
+      it('should replace snapshot title, if started with name argument', function() {
+        if (NODE_V_3) return;
+        var snapshot = profiler.takeSnapshot('S');
+        expect(snapshot.title).to.equal('S');
+      });
+
+      it('should use control function, if started with function argument', function(done) {
+        // Fix for Windows
+        var checked = false;
+        profiler.takeSnapshot(function(progress, total) {
+          if (progress === total) {
+            if (checked) return;
+            checked = true;
+            done();
+          }
+        });
+      });
+
+      it('should write heap stats', function(done) {
+        expect(profiler.startTrackingHeapObjects).to.not.throw();
+        profiler.getHeapStats(
+          function(samples) {
+            expect(samples).to.instanceof(Array);
+          },
+          function() {
+            expect(profiler.stopTrackingHeapObjects).to.not.throw();
+            done();
+          }
+        );
+      });
+
+      it('should return undefined for wrong params in getObjectByHeapObjectId', function() {
+        expect(profiler.getObjectByHeapObjectId('a')).to.be.equal(undefined);
+      })
     });
-  }
+
+    describe('Snapshot', function() {
+
+      it('should delete itself from profiler cache', function() {
+        var snapshot = profiler.takeSnapshot();
+        var oldSnapshotsLength = profiler.snapshots.length;
+        snapshot.delete();
+        expect(profiler.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
+      });
+
+      it('should serialise itself', function(done) {
+        var snapshot = profiler.takeSnapshot();
+        var buffer = '';
+        snapshot.serialize(
+          function iterator(data, length) {
+            buffer += data;
+          },
+          function callback() {
+            expect(JSON.parse.bind(JSON, buffer)).to.not.throw();
+            done();
+          }
+        );
+      });
+
+      it('should pipe itself to stream', function(done) {
+        var snapshot = profiler.takeSnapshot();
+        var fs = require('fs'),
+            ws = fs.createWriteStream('snapshot.json')
+                   .on('finish', function() {
+                     fs.unlink('snapshot.json', done);
+                   });
+
+        snapshot.export().pipe(ws);
+      });
+
+      it('should export itself to callback', function(done) {
+        var snapshot = profiler.takeSnapshot();
+
+        snapshot.export(function(err, result) {
+          expect(!err);
+          expect(typeof result == 'string');
+          done();
+        });
+      });
+
+      it('should compare itself with other snapshot', function() {
+        this.timeout(5000);
+        var snapshot1 = profiler.takeSnapshot();
+        var snapshot2 = profiler.takeSnapshot();
+
+        expect(snapshot1.compare.bind(snapshot1, snapshot2)).to.not.throw();
+      });
+
+    });
+
+    function deleteAllSnapshots() {
+      profiler.snapshots.slice().forEach(function(snapshot) {
+        snapshot.delete();
+      });
+    }
+  });
 });
