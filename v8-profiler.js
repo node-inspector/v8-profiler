@@ -29,8 +29,8 @@ Snapshot.prototype.compare = function(other) {
   keys.forEach(function(key) {
     if (key in diff) return;
 
-    var selfCount = selfCounts[key] || 0,
-        otherCount = otherCounts[key] || 0;
+    var selfCount = selfHist[key] || 0,
+        otherCount = otherHist[key] || 0;
 
     diff[key] = otherCount - selfCount;
   });
@@ -135,7 +135,18 @@ var profiler = {
   get snapshots() { return binding.heap.snapshots; },
 
   takeSnapshot: function(name, control) {
-    var snapshot = binding.heap.takeSnapshot.apply(null, arguments);
+    if (typeof name == 'function') {
+      control = name;
+      name = '';
+    }
+
+    if (typeof control !== 'function') {
+      control = function noop() {};
+    }
+
+    name = '' + name;
+
+    var snapshot = binding.heap.takeSnapshot(name, control);
     snapshot.__proto__ = Snapshot.prototype;
     snapshot.title = name;
     return snapshot;
@@ -163,13 +174,30 @@ var profiler = {
     });
   },
 
-  startTrackingHeapObjects: binding.heap.startTrackingHeapObjects,
+  startTrackingHeapObjects: function() {
+    binding.heap.startTrackingHeapObjects();
+  },
 
-  stopTrackingHeapObjects: binding.heap.stopTrackingHeapObjects,
+  stopTrackingHeapObjects: function() {
+    binding.heap.stopTrackingHeapObjects();
+  },
 
-  getHeapStats: binding.heap.getHeapStats,
+  getHeapStats: function(iterator, callback) {
+    if (typeof iterator !== 'function')
+      iterator = function noop() {};
 
-  getObjectByHeapObjectId: binding.heap.getObjectByHeapObjectId,
+    if (typeof callback !== 'function')
+      callback = function noop() {};
+
+    binding.heap.getHeapStats(iterator, callback)
+  },
+
+  getObjectByHeapObjectId: function(id) {
+    id = parseInt(id, 10);
+    if (isNaN(id)) return;
+
+    return binding.heap.getObjectByHeapObjectId(id);
+  },
 
   /*CPU PROFILER API*/
 
@@ -179,7 +207,13 @@ var profiler = {
     if (activeProfiles.length == 0 && typeof process._startProfilerIdleNotifier == "function")
       process._startProfilerIdleNotifier();
 
-    name = name || "";
+    if (typeof name == 'boolean') {
+      recsamples = name;
+      name = '';
+    }
+
+    recsamples = recsamples === undefined ? true : Boolean(recsamples);
+    name = '' + name;
 
     if (activeProfiles.indexOf(name) < 0)
       activeProfiles.push(name)

@@ -27,38 +27,10 @@ namespace nodex {
   }
 
   NAN_METHOD(CpuProfiler::StartProfiling) {
-#if (NODE_MODULE_VERSION > 0x000B)
-    bool recsamples = true;
-#endif
-    Local<String> title = Nan::EmptyString();
-    if (info.Length()) {
-      if (info.Length()>1) {
-        if (info[1]->IsBoolean()) {
-#if (NODE_MODULE_VERSION > 0x000B)
-          recsamples = info[1]->ToBoolean()->Value();
-#endif
-        } else if (!info[1]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [1] type (wait Boolean)");
-        }
-        if (info[0]->IsString()) {
-          title = info[0]->ToString();
-        } else if (!info[0]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [0] type (wait String)");
-        }
-      } else {
-        if (info[0]->IsString()) {
-          title = info[0]->ToString();
-        } else if (info[0]->IsBoolean()) {
-#if (NODE_MODULE_VERSION > 0x000B)
-          recsamples = info[0]->ToBoolean()->Value();
-#endif
-        } else if (!info[0]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [0] type (wait String or Boolean)");
-        }
-      }
-    }
+    Local<String> title = info[0]->ToString();
 
 #if (NODE_MODULE_VERSION > 0x000B)
+    bool recsamples = info[1]->ToBoolean()->Value();
     v8::Isolate::GetCurrent()->GetCpuProfiler()->StartProfiling(title, recsamples);
 #else
     v8::CpuProfiler::StartProfiling(title);

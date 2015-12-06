@@ -66,31 +66,10 @@ namespace nodex {
   }
 
   NAN_METHOD(HeapProfiler::TakeSnapshot) {
-    ActivityControlAdapter* control = NULL;
-    Local<String> title = Nan::EmptyString();
-    if (info.Length()) {
-      if (info.Length()>1) {
-        if (info[1]->IsFunction()) {
-          control = new ActivityControlAdapter(info[1]);
-        } else if (!info[1]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [1] type (wait Function)");
-        }
-        if (info[0]->IsString()) {
-          title = info[0]->ToString();
-        } else if (!info[0]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [0] type (wait String)");
-        }
-      } else {
-        if (info[0]->IsString()) {
-          title = info[0]->ToString();
-        } else if (info[0]->IsFunction()) {
-          control = new ActivityControlAdapter(info[0]);
-        } else if (!info[0]->IsUndefined()) {
-          return Nan::ThrowTypeError("Wrong argument [0] type (wait String or Function)");
-        }
-      }
-    }
-
+    ActivityControlAdapter* control = new ActivityControlAdapter(info[1]);
+#if (NODE_MODULE_VERSION <= 0x000B)
+    Local<String> title = info[0]->ToString();
+#endif
 
 #if (NODE_MODULE_VERSION > 0x002C)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(control);
@@ -114,12 +93,6 @@ namespace nodex {
   }
 
   NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {
-    if (info.Length() < 1) {
-      return Nan::ThrowError("Invalid number of arguments");
-    } else if (!info[0]->IsNumber()) {
-      return Nan::ThrowTypeError("Arguments must be a number");
-    }
-
     SnapshotObjectId id = info[0]->Uint32Value();
     Local<Value> object;
 #if (NODE_MODULE_VERSION > 0x000B)
@@ -168,12 +141,6 @@ namespace nodex {
   }
 
   NAN_METHOD(HeapProfiler::GetHeapStats) {
-    if (info.Length() < 2) {
-      return Nan::ThrowError("Invalid number of arguments");
-    } else if (!info[0]->IsFunction() || !info[1]->IsFunction()) {
-      return Nan::ThrowTypeError("Argument must be a function");
-    }
-
     Local<Function> iterator = Local<Function>::Cast(info[0]);
     Local<Function> callback = Local<Function>::Cast(info[1]);
 
