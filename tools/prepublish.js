@@ -1,4 +1,5 @@
-if (process.env.CI) process.exit(0);
+var npm_argv = JSON.parse(process.env.npm_config_argv);
+if (npm_argv.original[0] !== 'publish') process.exit(0);
 
 var rimraf = require('rimraf');
 var extend = require('util')._extend;
