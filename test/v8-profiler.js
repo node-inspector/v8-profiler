@@ -116,7 +116,7 @@ describe('v8-profiler', function() {
 
       it('should write heap stats', function(done) {
         expect(profiler.startTrackingHeapObjects).to.not.throw();
-        profiler.getHeapStats(
+        var lastSeenObjectId = profiler.getHeapStats(
           function(samples) {
             expect(samples).to.instanceof(Array);
           },
@@ -125,6 +125,7 @@ describe('v8-profiler', function() {
             done();
           }
         );
+        expect(typeof lastSeenObjectId).to.be.equal('number');
       });
 
       it('should return undefined for wrong params in getObjectByHeapObjectId', function() {

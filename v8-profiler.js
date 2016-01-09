@@ -189,7 +189,7 @@ var profiler = {
     if (typeof callback !== 'function')
       callback = function noop() {};
 
-    binding.heap.getHeapStats(iterator, callback)
+    return binding.heap.getHeapStats(iterator, callback)
   },
 
   getObjectByHeapObjectId: function(id) {
