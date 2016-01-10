@@ -9,7 +9,7 @@ namespace nodex {
   class Snapshot {
     public:
       static v8::Local<v8::Value> New(const v8::HeapSnapshot* node);
-      static Nan::Persistent<v8::Array> snapshots;
+      static Nan::Persistent<v8::Object> snapshots;
     private:
       static void Initialize();
       static NAN_GETTER(GetRoot);

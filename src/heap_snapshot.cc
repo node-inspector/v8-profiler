@@ -20,7 +20,7 @@ namespace nodex {
 
 
   Nan::Persistent<ObjectTemplate> Snapshot::snapshot_template_;
-  Nan::Persistent<Array> Snapshot::snapshots;
+  Nan::Persistent<Object> Snapshot::snapshots;
 
   NAN_METHOD(Snapshot_EmptyMethod) {
   }
@@ -41,12 +41,13 @@ namespace nodex {
 
   NAN_GETTER(Snapshot::GetRoot) {
     Local<Object> _root;
-    if (info.This()->Has(Nan::New<String>("_root").ToLocalChecked())) {
-      info.GetReturnValue().Set(info.This()->GetHiddenValue(Nan::New<String>("_root").ToLocalChecked()));
+    Local<String> __root = Nan::New<String>("_root").ToLocalChecked();
+    if (info.This()->Has(__root)) {
+      info.GetReturnValue().Set(info.This()->GetHiddenValue(__root));
     } else {
       void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
       Local<Value> _root = GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetRoot());
-      info.This()->SetHiddenValue(Nan::New<String>("_root").ToLocalChecked(), _root);
+      info.This()->SetHiddenValue(__root, _root);
       info.GetReturnValue().Set(_root);
     }
   }
@@ -92,20 +93,14 @@ namespace nodex {
 
   NAN_METHOD(Snapshot::Delete) {
     void* ptr = Nan::GetInternalFieldPointer(info.Holder(), 0);
-    Local<Array> snapshots = Nan::New<Array>(Snapshot::snapshots);
+    Local<Object> snapshots = Nan::New<Object>(Snapshot::snapshots);
 
-    uint32_t count = snapshots->Length();
-    for (uint32_t index = 0; index < count; index++) {
-      if (snapshots->Get(index) == info.This()) {
-        Local<Value> argv[2] = {
-          Nan::New<Integer>(index),
-          Nan::New<Integer>(1)
-        };
-        Local<Function>::Cast(snapshots->Get(Nan::New<String>("splice").ToLocalChecked()))->Call(snapshots, 2, argv);
-        break;
-      }
-    }
+    Local<String> __uid = Nan::New<String>("uid").ToLocalChecked();
+    Local<Integer> _uid = Nan::To<Integer>(Nan::Get(info.Holder(), __uid).ToLocalChecked()).ToLocalChecked();
+    Nan::Delete(snapshots, _uid->Value());
+
     static_cast<HeapSnapshot*>(ptr)->Delete();
+    info.GetReturnValue().Set(snapshots);
   }
 
   Local<Value> Snapshot::New(const HeapSnapshot* node) {
@@ -121,12 +116,12 @@ namespace nodex {
     Local<Value> HEAP = Nan::New<String>("HEAP").ToLocalChecked();
 #if (NODE_MODULE_VERSION > 0x002C)
     // starting with iojs 3 GetUid() and GetTitle() APIs were removed
-    uint16_t _uid = node->GetMaxSnapshotJSObjectId();
+    uint32_t _uid = node->GetMaxSnapshotJSObjectId();
     char _title[32];
     sprintf(_title, "Snapshot %i", _uid);
     Local<String> title = Nan::New<String>(_title).ToLocalChecked();
 #else
-    uint16_t _uid = node->GetUid();
+    uint32_t _uid = node->GetUid();
     Local<String> title = Nan::New<String>(node->GetTitle());
     if (!title->Length()) {
       char _title[32];
@@ -144,8 +139,8 @@ namespace nodex {
     snapshot->Set(Nan::New<String>("nodesCount").ToLocalChecked(), nodesCount);
     snapshot->Set(Nan::New<String>("maxSnapshotJSObjectId").ToLocalChecked(), objectId);
 
-    Local<Array> snapshots = Nan::New<Array>(Snapshot::snapshots);
-    snapshots->Set(snapshots->Length(), snapshot);
+    Local<Object> snapshots = Nan::New<Object>(Snapshot::snapshots);
+    Nan::Set(snapshots, _uid, snapshot);
 
     return scope.Escape(snapshot);
   }

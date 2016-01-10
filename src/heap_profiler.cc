@@ -52,7 +52,7 @@ namespace nodex {
     Nan::HandleScope scope;
 
     Local<Object> heapProfiler = Nan::New<Object>();
-    Local<Array> snapshots = Nan::New<Array>();
+    Local<Object> snapshots = Nan::New<Object>();
 
     Nan::SetMethod(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);
     Nan::SetMethod(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
@@ -98,16 +98,20 @@ namespace nodex {
 #if (NODE_MODULE_VERSION > 0x000B)
     object = v8::Isolate::GetCurrent()->GetHeapProfiler()->FindObjectById(id);
 #else
-    Local<Array> snapshots = Local<Array>::Cast(info.This()->Get(Nan::New<String>("snapshots").ToLocalChecked()));
+    Local<Object> snapshots = Local<Object>::Cast(info.This()->Get(Nan::New<String>("snapshots").ToLocalChecked()));
     Local<Object> snapshot;
-    uint32_t length = snapshots->Length();
 
+    Local<Array> names = Nan::GetOwnPropertyNames(snapshots).ToLocalChecked();
+    uint32_t length = names->Length();
     if (length == 0) return;
 
     for (uint32_t i = 0; i < length; ++i) {
-      snapshot = snapshots->Get(i)->ToObject();
-      Local<Value> argv[1] = { info[0] };
-      if (snapshot->Get(Nan::New<String>("maxSnapshotJSObjectId").ToLocalChecked())->Uint32Value() >= id) {
+      Local<Value> name = Nan::Get(names, i).ToLocalChecked();
+      uint32_t uid = Nan::To<Integer>(name).ToLocalChecked()->Value();
+      if (uid >= id) {
+        snapshot = Nan::To<Object>(Nan::Get(snapshots, uid).ToLocalChecked()).ToLocalChecked();
+
+        Local<Value> argv[] = { info[0] };
         Local<Object> graph_node = Function::Cast(*snapshot->Get(Nan::New<String>("getNodeById").ToLocalChecked()))
                                       ->Call(snapshot, 1, argv)->ToObject();
         object = Function::Cast(*graph_node->Get(Nan::New<String>("getHeapValue").ToLocalChecked()))

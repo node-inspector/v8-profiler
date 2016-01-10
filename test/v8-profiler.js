@@ -93,7 +93,7 @@ describe('v8-profiler', function() {
       });
 
       it('should cache snapshots', function() {
-        expect(profiler.snapshots).to.have.length(1);
+        expect(Object.keys(profiler.snapshots)).to.have.length(1);
       });
 
       it('should replace snapshot title, if started with name argument', function() {
@@ -137,9 +137,9 @@ describe('v8-profiler', function() {
 
       it('should delete itself from profiler cache', function() {
         var snapshot = profiler.takeSnapshot();
-        var oldSnapshotsLength = profiler.snapshots.length;
+        var oldSnapshotsLength = Object.keys(profiler.snapshots).length;
         snapshot.delete();
-        expect(profiler.snapshots.length == oldSnapshotsLength - 1).to.equal(true);
+        expect(Object.keys(profiler.snapshots).length == oldSnapshotsLength - 1).to.equal(true);
       });
 
       it('should serialise itself', function(done) {
@@ -184,12 +184,11 @@ describe('v8-profiler', function() {
 
         expect(snapshot1.compare.bind(snapshot1, snapshot2)).to.not.throw();
       });
-
     });
 
     function deleteAllSnapshots() {
-      profiler.snapshots.slice().forEach(function(snapshot) {
-        snapshot.delete();
+      Object.keys(profiler.snapshots).forEach(function(key) {
+        profiler.snapshots[key].delete();
       });
     }
   });

@@ -114,8 +114,8 @@ describe('binding', function() {
     });
 
     function deleteAllSnapshots() {
-      binding.heap.snapshots.slice().forEach(function(snapshot) {
-        snapshot.delete();
+      Object.keys(binding.heap.snapshots).forEach(function(key) {
+        binding.heap.snapshots[key].delete();
       });
     }
   });
