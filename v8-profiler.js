@@ -199,6 +199,11 @@ var profiler = {
     return binding.heap.getObjectByHeapObjectId(id);
   },
 
+  getHeapObjectId: function(value) {
+    if (!arguments.length) return;
+    return binding.heap.getHeapObjectId(value);
+  },
+
   /*CPU PROFILER API*/
 
   get profiles() { return binding.cpu.profiles; },

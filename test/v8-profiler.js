@@ -2,7 +2,6 @@ const expect  = require('chai').expect,
       profiler = require('../');
 
 const NODE_V_010 = /^v0\.10\.\d+$/.test(process.version);
-const NODE_V_3 = /^v3\./.test(process.version);
 
 describe('v8-profiler', function() {
   describe('CPU', function() {
@@ -23,9 +22,6 @@ describe('v8-profiler', function() {
       });
 
       it('should replace profile title, if started with name argument', function() {
-        // starting with nodejs v3.x v8 doesn't support setting custom snapshot title
-        if (NODE_V_3) return;
-
         profiler.startProfiling('P');
         var profile = profiler.stopProfiling();
         expect(profile.title).to.equal('P');
@@ -97,7 +93,6 @@ describe('v8-profiler', function() {
       });
 
       it('should replace snapshot title, if started with name argument', function() {
-        if (NODE_V_3) return;
         var snapshot = profiler.takeSnapshot('S');
         expect(snapshot.title).to.equal('S');
       });
@@ -130,16 +125,36 @@ describe('v8-profiler', function() {
 
       it('should return undefined for wrong params in getObjectByHeapObjectId', function() {
         expect(profiler.getObjectByHeapObjectId('a')).to.be.equal(undefined);
-      })
+      });
+
+      it('should return id for object in getHeapObjectId', function() {
+        var obj = {};
+        var snapshot = profiler.takeSnapshot();
+        expect(profiler.getHeapObjectId(obj)).to.be.gt(0);
+      });
+
+      it('should return id for undefined param in getHeapObjectId', function() {
+        var snapshot = profiler.takeSnapshot();
+        expect(profiler.getHeapObjectId(undefined)).to.be.gt(0);
+      });
+
+      it('should return undefined for wrong params in getHeapObjectId', function() {
+        var snapshot = profiler.takeSnapshot();
+        expect(profiler.getHeapObjectId()).to.be.equal(undefined);
+      });
     });
 
     describe('Snapshot', function() {
 
       it('should delete itself from profiler cache', function() {
         var snapshot = profiler.takeSnapshot();
+        var uid = snapshot.uid;
+
         var oldSnapshotsLength = Object.keys(profiler.snapshots).length;
         snapshot.delete();
+
         expect(Object.keys(profiler.snapshots).length == oldSnapshotsLength - 1).to.equal(true);
+        expect(profiler.snapshots[uid]).to.be.equal(undefined);
       });
 
       it('should serialise itself', function(done) {

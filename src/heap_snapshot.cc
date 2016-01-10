@@ -93,6 +93,7 @@ namespace nodex {
 
   NAN_METHOD(Snapshot::Delete) {
     void* ptr = Nan::GetInternalFieldPointer(info.Holder(), 0);
+
     Local<Object> snapshots = Nan::New<Object>(Snapshot::snapshots);
 
     Local<String> __uid = Nan::New<String>("uid").ToLocalChecked();
@@ -114,21 +115,14 @@ namespace nodex {
     Nan::SetInternalFieldPointer(snapshot, 0, const_cast<HeapSnapshot*>(node));
 
     Local<Value> HEAP = Nan::New<String>("HEAP").ToLocalChecked();
-#if (NODE_MODULE_VERSION > 0x002C)
+
     // starting with iojs 3 GetUid() and GetTitle() APIs were removed
     uint32_t _uid = node->GetMaxSnapshotJSObjectId();
+
     char _title[32];
     sprintf(_title, "Snapshot %i", _uid);
     Local<String> title = Nan::New<String>(_title).ToLocalChecked();
-#else
-    uint32_t _uid = node->GetUid();
-    Local<String> title = Nan::New<String>(node->GetTitle());
-    if (!title->Length()) {
-      char _title[32];
-      sprintf(_title, "Snapshot %i", _uid);
-      title = Nan::New<String>(_title).ToLocalChecked();
-    }
-#endif
+
     Local<Value> uid = Nan::New<Integer>(_uid);
     Local<Integer> nodesCount = Nan::New<Integer>(node->GetNodesCount());
     Local<Integer> objectId = Nan::New<Integer>(node->GetMaxSnapshotJSObjectId());

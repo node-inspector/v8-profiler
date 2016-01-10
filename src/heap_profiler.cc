@@ -59,6 +59,7 @@ namespace nodex {
     Nan::SetMethod(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
     Nan::SetMethod(heapProfiler, "getHeapStats", HeapProfiler::GetHeapStats);
     Nan::SetMethod(heapProfiler, "getObjectByHeapObjectId", HeapProfiler::GetObjectByHeapObjectId);
+    Nan::SetMethod(heapProfiler, "getHeapObjectId", HeapProfiler::GetHeapObjectId);
     heapProfiler->Set(Nan::New<String>("snapshots").ToLocalChecked(), snapshots);
 
     Snapshot::snapshots.Reset(snapshots);
@@ -90,6 +91,19 @@ namespace nodex {
 #endif
 
     return;
+  }
+
+  NAN_METHOD(HeapProfiler::GetHeapObjectId) {
+    if (info[0].IsEmpty()) return;
+
+    SnapshotObjectId id;
+#if (NODE_MODULE_VERSION > 0x000B)
+    id = v8::Isolate::GetCurrent()->GetHeapProfiler()->GetObjectId(info[0]);
+#else
+    id = v8::HeapProfiler::GetSnapshotObjectId(info[0]);
+#endif
+
+    info.GetReturnValue().Set(Nan::New<Integer>(id));
   }
 
   NAN_METHOD(HeapProfiler::GetObjectByHeapObjectId) {

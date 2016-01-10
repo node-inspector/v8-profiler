@@ -19,6 +19,7 @@ namespace nodex {
       static NAN_METHOD(StopTrackingHeapObjects);
       static NAN_METHOD(GetHeapStats);
       static NAN_METHOD(GetObjectByHeapObjectId);
+      static NAN_METHOD(GetHeapObjectId);
     };
 } //namespace nodex
 
