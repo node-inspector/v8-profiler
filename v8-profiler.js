@@ -169,8 +169,8 @@ var profiler = {
   },
 
   deleteAllSnapshots: function () {
-    binding.heap.snapshots.forEach(function(snapshot) {
-      snapshot.delete();
+    Object.keys(binding.heap.snapshots).forEach(function(key) {
+      binding.heap.snapshots[key].delete();
     });
   },
 
