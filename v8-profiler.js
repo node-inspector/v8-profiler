@@ -152,22 +152,6 @@ var profiler = {
     return snapshot;
   },
 
-  getSnapshot: function(index) {
-    var snapshot = binding.heap.snapshots[index];
-    if (!snapshot) return;
-    snapshot.__proto__ = Snapshot.prototype;
-    return snapshot;
-  },
-
-  findSnapshot: function(uid) {
-    var snapshot = binding.heap.snapshots.filter(function(snapshot) {
-      return snapshot.uid == uid;
-    })[0];
-    if (!snapshot) return;
-    snapshot.__proto__ = Snapshot.prototype;
-    return snapshot;
-  },
-
   deleteAllSnapshots: function () {
     Object.keys(binding.heap.snapshots).forEach(function(key) {
       binding.heap.snapshots[key].delete();
@@ -258,20 +242,9 @@ var profiler = {
     binding.cpu.setSamplingInterval(num);
   },
 
-  getProfile: function(index) {
-    return binding.cpu.profiles[index];
-  },
-
-  findProfile: function(uid) {
-    var profile = binding.cpu.profiles.filter(function(profile) {
-      return profile.uid == uid;
-    })[0];
-    return profile;
-  },
-
   deleteAllProfiles: function() {
-    binding.cpu.profiles.forEach(function(profile) {
-      profile.delete();
+    Object.keys(binding.cpu.profiles).forEach(function(key) {
+      binding.cpu.profiles[key].delete();
     });
   }
 };

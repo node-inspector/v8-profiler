@@ -50,9 +50,9 @@ describe('binding', function() {
       it('should delete itself from profiler cache', function() {
         cpu.startProfiling('', true);
         var profile = cpu.stopProfiling();
-        var oldProfilesLength = cpu.profiles.length;
+        var oldProfilesLength = Object.keys(cpu.profiles).length;
         profile.delete();
-        expect(cpu.profiles.length == oldProfilesLength - 1).to.equal(true);
+        expect(oldProfilesLength - Object.keys(cpu.profiles).length).to.equal(1);
       });
     });
 

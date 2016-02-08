@@ -17,7 +17,7 @@ namespace nodex {
   using v8::Value;
 
   Nan::Persistent<ObjectTemplate> Profile::profile_template_;
-  Nan::Persistent<Array> Profile::profiles;
+  Nan::Persistent<Object> Profile::profiles;
   uint32_t Profile::uid_counter = 0;
 
   NAN_METHOD(Profile_EmptyMethod) {
@@ -36,19 +36,10 @@ namespace nodex {
   NAN_METHOD(Profile::Delete) {
     Local<Object> self = info.This();
     void* ptr = Nan::GetInternalFieldPointer(self, 0);
-    Local<Array> profiles = Nan::New<Array>(Profile::profiles);
-
-    uint32_t count = profiles->Length();
-    for (uint32_t index = 0; index < count; index++) {
-      if (profiles->Get(index) == info.This()) {
-        Local<Value> argv[2] = {
-          Nan::New<Integer>(index),
-          Nan::New<Integer>(1)
-        };
-        Local<Function>::Cast(profiles->Get(Nan::New<String>("splice").ToLocalChecked()))->Call(profiles, 2, argv);
-        break;
-      }
-    }
+    Local<Object> profiles = Nan::New<Object>(Profile::profiles);
+    Local<Value> _uid = info.This()->Get(Nan::New<String>("uid").ToLocalChecked());
+    Local<String> uid = Nan::To<String>(_uid).ToLocalChecked();
+    profiles->Delete(uid);
     static_cast<CpuProfile*>(ptr)->Delete();
   }
 
@@ -64,15 +55,19 @@ namespace nodex {
     Local<Object> profile = Nan::New(profile_template_)->NewInstance();
     Nan::SetInternalFieldPointer(profile, 0, const_cast<CpuProfile*>(node));
 
+    const uint32_t uid_length = (((sizeof uid_counter) * 8) + 2)/3 + 2;
+    char _uid[uid_length];
+    sprintf(_uid, "%d", uid_counter);
+
     Local<Value> CPU = Nan::New<String>("CPU").ToLocalChecked();
-    Local<Value> uid = Nan::New<Integer>(uid_counter);
+    Local<Value> uid = Nan::New<String>(_uid).ToLocalChecked();
 #if (NODE_MODULE_VERSION >= 45)
     Local<String> title = node->GetTitle();
 #else
     Local<String> title = Nan::New(node->GetTitle());
 #endif
     if (!title->Length()) {
-      char _title[32];
+      char _title[8 + uid_length];
       sprintf(_title, "Profile %i", uid_counter);
       title = Nan::New<String>(_title).ToLocalChecked();
     }
@@ -101,8 +96,8 @@ namespace nodex {
     profile->Set(Nan::New<String>("timestamps").ToLocalChecked(),  timestamps);
 #endif
 
-    Local<Array> profiles = Nan::New<Array>(Profile::profiles);
-    profiles->Set(profiles->Length(), profile);
+    Local<Object> profiles = Nan::New<Object>(Profile::profiles);
+    profiles->Set(uid, profile);
 
     return scope.Escape(profile);
   }

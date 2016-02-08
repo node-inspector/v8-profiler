@@ -18,7 +18,7 @@ describe('v8-profiler', function() {
       });
 
       it('should cache profiles', function() {
-        expect(profiler.profiles).to.have.length(1);
+        expect(Object.keys(profiler.profiles)).to.have.length(1);
       });
 
       it('should replace profile title, if started with name argument', function() {
@@ -73,8 +73,8 @@ describe('v8-profiler', function() {
     });
 
     function deleteAllProfiles() {
-      profiler.profiles.slice().forEach(function(profile) {
-        profile.delete();
+      Object.keys(profiler.profiles).forEach(function(key) {
+        profiler.profiles[key].delete();
       });
     }
   });
