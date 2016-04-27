@@ -35,7 +35,7 @@
   "main": "v8-profiler",
   "dependencies": {
     "node-pre-gyp": "^0.6.5",
-    "nan": "~2.0.5"
+    "nan": "~2.3.2"
   },
   "devDependencies": {
     "aws-sdk": "^2.0.0",
