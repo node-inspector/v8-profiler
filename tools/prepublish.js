@@ -10,13 +10,17 @@ rimraf.sync('./build');
 var versions = ['0.10.0', '0.12.0', '4.0.0', '5.0.0'];
 var matrix = {
   x64: ['win32', 'linux', 'darwin'],
-  ia32: ['win32']
+  ia32: ['win32'],
+  except: { '4.0.0-win32-ia32': true }
 };
 
 var targets = [];
 Object.keys(matrix).forEach(function(arch) {
   matrix[arch].forEach(function(platform) {
     versions.forEach(function(version) {
+      var key = version + '-' + platform + '-' + arch;
+      if (matrix.except[key]) return;
+
       targets.push({
         target: version,
         target_platform: platform,
