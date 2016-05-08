@@ -7,19 +7,18 @@ var gyp = require('node-pre-gyp');
 
 rimraf.sync('./build');
 
-var versions = ['0.10.0', '0.12.0', '4.0.0', '5.0.0'];
+var versions = ['0.10.0', '0.12.0', '4.0.0', '5.0.0', '6.0.0'];
 var matrix = {
   x64: ['win32', 'linux', 'darwin'],
-  ia32: ['win32'],
-  except: { '4.0.0-win32-ia32': true }
+  ia32: ['win32']
 };
+var except = { '4.0.0-win32-ia32': true };
 
 var targets = [];
 Object.keys(matrix).forEach(function(arch) {
   matrix[arch].forEach(function(platform) {
     versions.forEach(function(version) {
-      var key = version + '-' + platform + '-' + arch;
-      if (matrix.except[key]) return;
+      if (except[version + '-' + platform + '-' + arch]) return;
 
       targets.push({
         target: version,
