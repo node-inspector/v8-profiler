@@ -1,6 +1,3 @@
-var npm_argv = JSON.parse(process.env.npm_config_argv);
-if (npm_argv.original[0] !== 'publish') process.exit(0);
-
 var rimraf = require('rimraf');
 var extend = require('util')._extend;
 var gyp = require('node-pre-gyp');
@@ -29,9 +26,7 @@ Object.keys(matrix).forEach(function(arch) {
   });
 }, []);
 
-iterate();
-
-function iterate(err) {
+module.exports = function prepublish(err) {
   if (err) {
     console.log(err.message);
     return process.exit(1);
@@ -43,5 +38,5 @@ function iterate(err) {
 
   var prog = extend(new gyp.Run(), {opts: target});
 
-  prog.commands.install([], iterate);
-}
+  prog.commands.install([], prepublish);
+};

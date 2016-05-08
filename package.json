@@ -44,10 +44,10 @@
     "rimraf": "^2.4.4"
   },
   "scripts": {
-    "preinstall": "node -e 'process.exit(0)'",
-    "prepublish": "node ./tools/prepublish.js",
+    "preinstall": "npm install node-pre-gyp",
     "install": "node-pre-gyp install --fallback-to-build",
     "rebuild": "node-pre-gyp rebuild",
+    "release": "node ./tools/release.js $@",
     "test": "mocha --debug"
   }
 }
