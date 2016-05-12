@@ -44,7 +44,7 @@
     "rimraf": "^2.4.4"
   },
   "scripts": {
-    "preinstall": "npm install node-pre-gyp",
+    "preinstall": "node -e 'process.exit(0)'",
     "install": "node-pre-gyp install --fallback-to-build",
     "rebuild": "node-pre-gyp rebuild",
     "release": "node ./tools/release.js $@",

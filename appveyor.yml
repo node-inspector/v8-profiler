@@ -35,6 +35,11 @@ install:
 
   - IF %NODE_VERSION% LSS 1 npm -g install npm
   - IF %NODE_VERSION% LSS 1 set PATH=%APPDATA%\npm;%PATH%
+  # work around an issue with node-gyp v3.3.1 and node 4x
+  # package.json has no certificates in it so we're cool
+  # https://github.com/nodejs/node-gyp/issues/921
+  - IF %NODE_VERSION% == 4 npm config set -g cafile=package.json
+  - IF %NODE_VERSION% == 4 npm config set -g strict-ssl=false
 
   # Check if new tag released and publish binary in this case.
   - SET PUBLISH_BINARY=%APPVEYOR_REPO_TAG%
