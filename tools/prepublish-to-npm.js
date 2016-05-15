@@ -1,42 +1,37 @@
-var rimraf = require('rimraf');
-var extend = require('util')._extend;
-var gyp = require('node-pre-gyp');
+'use strict';
 
-rimraf.sync('./build');
-
-var versions = ['0.10.0', '0.12.0', '4.0.0', '5.0.0', '6.0.0'];
-var matrix = {
+const co = require('co');
+const rimraf = require('rimraf');
+const gyp = require('node-pre-gyp');
+const versions = ['0.10.0', '0.12.0', '4.0.0', '5.0.0', '6.0.0'];
+const matrix = {
   x64: ['win32', 'linux', 'darwin'],
   ia32: ['win32']
 };
-var except = { '4.0.0-win32-ia32': true };
 
-var targets = [];
-Object.keys(matrix).forEach(function(arch) {
-  matrix[arch].forEach(function(platform) {
-    versions.forEach(function(version) {
-      if (except[version + '-' + platform + '-' + arch]) return;
-
-      targets.push({
-        target: version,
-        target_platform: platform,
-        target_arch: arch
-      });
-    });
-  });
-}, []);
-
-module.exports = function prepublish(err) {
-  if (err) {
-    console.log(err.message);
-    return process.exit(1);
+class Target {
+  constructor(arch, platform, version) {
+    this.target = version;
+    this.target_platform = platform;
+    this.target_arch = arch;
   }
+}
 
-  var target = targets.pop();
+const install = target => new Promise((resolve, reject) => {
+  const prog = Object.assign(new gyp.Run(), {opts: target});
 
-  if (!target) process.exit(0);
+  prog.commands.install([], error => error ? reject(error) : resolve());
+});
 
-  var prog = extend(new gyp.Run(), {opts: target});
+module.exports = co.wrap(function * () {
+  rimraf.sync('./build');
 
-  prog.commands.install([], prepublish);
-};
+  const targets = [];
+  Object.keys(matrix).forEach(
+    (arch) => matrix[arch].forEach(
+    (platform) => versions.forEach(
+    (version) => targets.push(new Target(arch, platform, version))
+  )));
+
+  while (targets.length) yield install(targets.pop());
+});

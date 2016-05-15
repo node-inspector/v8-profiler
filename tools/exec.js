@@ -1,5 +1,9 @@
-var _exec = require('child_process').execSync;
+'use strict';
 
-module.exports = function(expression) {
-  return String(_exec(expression)).trim();
-};
+const exec = require('child_process').exec;
+
+module.exports =
+  (expression) => new Promise(
+  (resolve, reject) => exec(expression,
+  (error, result) => error ? reject(error) : resolve(String(result).trim())
+));

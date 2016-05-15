@@ -1,5 +1,6 @@
-var exec = require('./exec');
+'use strict';
 
-module.exports = function publish(version) {
-  exec('npm publish');
-};
+const exec = require('./exec');
+
+module.exports =
+  (version) => exec('npm publish');

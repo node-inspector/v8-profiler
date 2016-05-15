@@ -1,55 +1,60 @@
-var args = process.argv.slice(2);
-var version = args.splice(0, 1);
+'use strict';
 
-var npm = require('./update-npm-version');
-var changelog = require('./update-changelog');
-var tag = require('./annotate-tag');
-var commit = require('./commit-changes');
-var push = require('./push-to-githab');
+const co = require('co');
+const args = process.argv.slice(2);
+const version = args.splice(0, 1);
 
-var prepublish = require('./prepublish-to-npm');
-var publish = require('./publish-to-npm');
+const npm = require('./update-npm-version');
+const changelog = require('./update-changelog');
+const tag = require('./annotate-tag');
+const commit = require('./commit-changes');
+const push = require('./push-to-githab');
 
-var EXAMPLE = ' Example:\n' +
+const prepublish = require('./prepublish-to-npm');
+const publish = require('./publish-to-npm');
+
+const EXAMPLE = ' Example:\n' +
   'node release.js 1.0.0 --build\n' +
   'node release.js 1.0.0 --publish'
 
-var SEMVER = /^\d+(\.\d+(\.\d+(-.*)?)?(-.*)?)?(-.*)?$/;
+const SEMVER = /^\d+(\.\d+(\.\d+(-.*)?)?(-.*)?)?(-.*)?$/;
 
 console.assert(version, 'Wrong usage.' + EXAMPLE);
 console.assert(SEMVER.test(version), version + ' is not correct semver');
 
-var BUILD = args.some(function(arg) {
-  return /^(-b|--build)$/.test(arg);
-});
+const BUILD = args.some(
+  (arg) => /^(-b|--build)$/.test(arg));
 
-var PUBLISH = args.some(function(arg) {
-  return /^(-p|--publish)$/.test(arg);
-});
+const PUBLISH = args.some(
+  (arg) => /^(-p|--publish)$/.test(arg));
 
 console.assert(BUILD || PUBLISH, 'No mode selected.' + EXAMPLE);
 
-if (BUILD) {
-  console.log('--Update the version in package.json--');
-  npm(version);
+return co(function * () {
+  if (BUILD) {
+    console.log('--Update the version in package.json--');
+    yield npm(version);
 
-  // TODO: enable changelog on 1.0 version
-  // console.log('--Update ChangeLog.md--');
-  // changelog();
+    // TODO: enable changelog on 1.0 version
+    // console.log('--Update ChangeLog.md--');
+    // changelog();
 
-  console.log('--Commit the changes--');
-  commit(version);
+    console.log('--Commit the changes--');
+    yield commit(version);
 
-  console.log('--Tag the release--')
-  tag(version);
+    console.log('--Tag the release--')
+    yield tag(version);
 
-  console.log('--Push to github--');
-  push(version);
+    console.log('--Push to github--');
+    yield push(version);
+  } else if (PUBLISH) {
+    console.log('--Download prebuilt binaries--');
+    yield prepublish();
 
-} else if (PUBLISH) {
-  console.log('--Download prebuilt binaries--');
-  prepublish();
-
-  console.log('--Publish to npm--');
-  publish();
-}
+    console.log('--Publish to npm--');
+    yield publish();
+  }
+}).catch((error) => {
+  console.error(error.stack);
+  return process.exit(1);
+});

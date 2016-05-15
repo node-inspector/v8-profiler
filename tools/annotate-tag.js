@@ -1,7 +1,11 @@
-var exec = require('./exec');
+'use strict';
 
-module.exports = function tag(version) {
-  var history = require('./history')(version);
-  var tagname = 'v' + version;
-  exec('git tag -a "' + tagname + '" -m "' + history + '"');
-};
+const co = require('co');
+const exec = require('./exec');
+
+module.exports = co.wrap(function * (version) {
+  const history = yield require('./history')(version);
+  const tagname = 'v' + version;
+
+  return yield exec('git tag -a "' + tagname + '" -m "' + history + '"');
+});

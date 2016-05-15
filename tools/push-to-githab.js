@@ -1,6 +1,6 @@
-var exec = require('./exec');
+'use strict';
 
-module.exports = function push(version) {
-  var tag = 'v' + version;
-  exec('git push && git push origin "' + tag + '"');
-};
+const exec = require('./exec');
+
+module.exports =
+  (version) => exec('git push && git push origin "v' + version + '"');

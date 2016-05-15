@@ -1,5 +1,6 @@
-var exec = require('./exec');
+'use strict';
 
-module.exports = function npm(version) {
-  exec('npm version --git-tag-version=false "' + version + '"');
-};
+const exec = require('./exec');
+
+module.exports =
+  (version) => exec('npm version --git-tag-version=false "' + version + '"');

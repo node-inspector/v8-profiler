@@ -1,6 +1,7 @@
-var exec = require('./exec');
+'use strict';
 
-module.exports = function commit(version) {
-  var changed = [/*'ChangeLog.md',*/ 'package.json'].join(' ');
-  exec('git commit -m "' + version + '" ' + changed);
-};
+const exec = require('./exec');
+const changed = [/*'ChangeLog.md',*/ 'package.json'].join(' ');
+
+module.exports =
+  (version) => exec('git commit -m "' + version + '" ' + changed);
