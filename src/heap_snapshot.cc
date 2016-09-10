@@ -2,6 +2,53 @@
 #include "heap_output_stream.h"
 #include "heap_graph_node.h"
 
+namespace {
+#if (NODE_MODULE_VERSION > 48)
+  // The two methods below were copied from
+  // https://github.com/electron/electron?branch=master&filepath=atom/common/api/atom_api_v8_util.cc
+  // Copyright (c) 2013 GitHub, Inc.
+  // Use of this source code is governed by the MIT license.
+
+  v8::Local<v8::Value> GetHiddenValue(v8::Isolate* isolate,
+                                      v8::Local<v8::Object> object,
+                                      v8::Local<v8::String> key) {
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, key);
+    v8::Local<v8::Value> value;
+    v8::Maybe<bool> result = object->HasPrivate(context, privateKey);
+    if (!(result.IsJust() && result.FromJust()))
+      return v8::Local<v8::Value>();
+    if (object->GetPrivate(context, privateKey).ToLocal(&value))
+      return value;
+    return v8::Local<v8::Value>();
+  }
+
+  void SetHiddenValue(v8::Isolate* isolate,
+                      v8::Local<v8::Object> object,
+                      v8::Local<v8::String> key,
+                      v8::Local<v8::Value> value) {
+    if (value.IsEmpty())
+      return;
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, key);
+    object->SetPrivate(context, privateKey, value);
+  }
+#else
+  v8::Local<v8::Value> GetHiddenValue(v8::Isolate* isolate,
+                                      v8::Local<v8::Object> object,
+                                      v8::Local<v8::String> key) {
+    return object->GetHiddenValue(key);
+  }
+
+  void SetHiddenValue(v8::Isolate* isolate,
+                      v8::Local<v8::Object> object,
+                      v8::Local<v8::String> key,
+                      v8::Local<v8::Value> value) {
+    object->SetHiddenValue(key, value);
+  }
+#endif
+}
+
 namespace nodex {
   using v8::Array;
   using v8::Handle;
@@ -43,11 +90,11 @@ namespace nodex {
     Local<Object> _root;
     Local<String> __root = Nan::New<String>("_root").ToLocalChecked();
     if (info.This()->Has(__root)) {
-      info.GetReturnValue().Set(info.This()->GetHiddenValue(__root));
+      info.GetReturnValue().Set(GetHiddenValue(info.GetIsolate(), info.This(), __root));
     } else {
       void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
       Local<Value> _root = GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetRoot());
-      info.This()->SetHiddenValue(__root, _root);
+      SetHiddenValue(info.GetIsolate(), info.This(), __root, _root);
       info.GetReturnValue().Set(_root);
     }
   }
