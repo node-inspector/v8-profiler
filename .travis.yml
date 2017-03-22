@@ -21,6 +21,7 @@ env:
     - export NODE_VERSION="4"
     - export NODE_VERSION="5"
     - export NODE_VERSION="6"
+    - export NODE_VERSION="7"
   global:
     - node_pre_gyp_region="eu-central-1"
 
