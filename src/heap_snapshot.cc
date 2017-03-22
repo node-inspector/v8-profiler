@@ -18,7 +18,6 @@ namespace nodex {
   using v8::Function;
   using v8::Value;
 
-
   Nan::Persistent<ObjectTemplate> Snapshot::snapshot_template_;
   Nan::Persistent<Object> Snapshot::snapshots;
 
@@ -43,11 +42,13 @@ namespace nodex {
     Local<Object> _root;
     Local<String> __root = Nan::New<String>("_root").ToLocalChecked();
     if (info.This()->Has(__root)) {
-      info.GetReturnValue().Set(info.This()->GetHiddenValue(__root));
+      Local<Value> root;
+      Nan::GetPrivate(info.This(), __root).ToLocal(&root);
+      info.GetReturnValue().Set(root);
     } else {
       void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
       Local<Value> _root = GraphNode::New(static_cast<HeapSnapshot*>(ptr)->GetRoot());
-      info.This()->SetHiddenValue(__root, _root);
+      Nan::SetPrivate(info.This(), __root, _root);
       info.GetReturnValue().Set(_root);
     }
   }
