@@ -2,7 +2,7 @@
   'targets': [
     {
       'target_name': 'profiler',
-      'win_delay_load_hook': 'true',
+      'win_delay_load_hook': 'false',
       'sources': [
         'src/profiler.cc',
         'src/cpu_profiler.cc',
