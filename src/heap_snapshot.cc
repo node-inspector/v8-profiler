@@ -42,8 +42,7 @@ namespace nodex {
     Local<Object> _root;
     Local<String> __root = Nan::New<String>("_root").ToLocalChecked();
     if (info.This()->Has(__root)) {
-      Local<Value> root;
-      Nan::GetPrivate(info.This(), __root).ToLocal(&root);
+      Local<Value> root = Nan::GetPrivate(info.This(), __root).ToLocalChecked();
       info.GetReturnValue().Set(root);
     } else {
       void* ptr = Nan::GetInternalFieldPointer(info.This(), 0);
