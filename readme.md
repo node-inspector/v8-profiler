@@ -1,18 +1,21 @@
-[![Build Status](https://secure.travis-ci.org/node-inspector/v8-profiler.png?branch=master)](http://travis-ci.org/node-inspector/v8-profiler)
-[![Build status](https://ci.appveyor.com/api/projects/status/hhgloy5smkl5i8fd/branch/master?svg=true)](https://ci.appveyor.com/project/3y3/v8-profiler/branch/master)
-[![npm version](https://badge.fury.io/js/v8-profiler.svg)](http://badge.fury.io/js/v8-profiler)
+[![Build Status](https://secure.travis-ci.org/node-inspector/v8-profiler-next.png?branch=master)](http://travis-ci.org/node-inspector/v8-profiler-next)
+[![Build status](https://ci.appveyor.com/api/projects/status/hhgloy5smkl5i8fd/branch/master?svg=true)](https://ci.appveyor.com/project/3y3/v8-profiler-next/branch/master)
+[![npm version](https://badge.fury.io/js/v8-profiler-next.svg)](http://badge.fury.io/js/v8-profiler-next)
 
-v8-profiler provides [node](http://github.com/ry/node) bindings for the v8
+v8-profiler-next provides [node](http://github.com/ry/node) bindings for the v8
 profiler and integration with [node-inspector](http://github.com/dannycoates/node-inspector)
 
 ## Installation
 ```sh
-npm install v8-profiler
+npm install v8-profiler-next
 ```
 ## Usage
 ```js
-var profiler = require('v8-profiler');
+var profiler = require('v8-profiler-next');
 ```
+## New Features
+* fix: takeSnapshot segfaults on Node 8
+* add: will support heap profile
 ## API
 `takeSnapshot([name])` - returns new HEAP Snapshot instance. `name` is optional argument, by default snapshot name will be constructed from his uid.
 
@@ -55,7 +58,7 @@ If callback will not be passed, `export` returns transform stream.
 
 ```js
 var fs = require('fs');
-var profiler = require('v8-profiler');
+var profiler = require('v8-profiler-next');
 var snapshot1 = profiler.takeSnapshot();
 var snapshot2 = profiler.takeSnapshot();
 
@@ -84,7 +87,7 @@ snapshot2.export()
 
 ```js
 var fs = require('fs');
-var profiler = require('v8-profiler');
+var profiler = require('v8-profiler-next');
 profiler.startProfiling('1', true);
 var profile1 = profiler.stopProfiling();
 profiler.startProfiling('2', true);
