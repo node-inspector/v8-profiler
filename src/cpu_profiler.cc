@@ -56,6 +56,10 @@ namespace nodex {
     profile = v8::CpuProfiler::StopProfiling(title);
 #endif
 
+    if (profile == NULL) {
+      return Nan::ThrowError("Not profiling");
+    }
+
     info.GetReturnValue().Set(Profile::New(profile));
   }
 
