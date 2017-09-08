@@ -69,12 +69,20 @@ namespace nodex {
   }
 
   NAN_METHOD(HeapProfiler::IncreaseHeapLimit) {
-    v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
+#if (NODE_MODULE_VERSION > 0x0038)
+      v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
+#elif
+      throw std::runtime_error("IncreaseHeapLimitForDebugging is only available from Node.js v8+");
+#endif
     return;
   }
 
   NAN_METHOD(HeapProfiler::RestoreHeapLimit) {
-    v8::Isolate::GetCurrent()->RestoreOriginalHeapLimit();
+#if (NODE_MODULE_VERSION > 0x0038)
+      v8::Isolate::GetCurrent()->RestoreOriginalHeapLimit();
+#elif
+      throw std::runtime_error("RestoreOriginalHeapLimit is only available from Node.js v8+");
+#endif
     return;
   }
 
