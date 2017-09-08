@@ -1,7 +1,6 @@
 #include "heap_profiler.h"
 #include "heap_snapshot.h"
 #include "heap_output_stream.h"
-#include <stdexcept>
 
 namespace nodex {
   using v8::ActivityControl;
@@ -71,20 +70,14 @@ namespace nodex {
 
   NAN_METHOD(HeapProfiler::IncreaseHeapLimit) {
 #if (NODE_MODULE_VERSION > 0x0038)
-      v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
-#else
-      throw std::runtime_error("IncreaseHeapLimitForDebugging is only available from Node.js v8+");
+    v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
 #endif
-    return;
   }
 
   NAN_METHOD(HeapProfiler::RestoreHeapLimit) {
 #if (NODE_MODULE_VERSION > 0x0038)
-      v8::Isolate::GetCurrent()->RestoreOriginalHeapLimit();
-#else
-      throw std::runtime_error("RestoreOriginalHeapLimit is only available from Node.js v8+");
+    v8::Isolate::GetCurrent()->RestoreOriginalHeapLimit();
 #endif
-    return;
   }
 
   NAN_METHOD(HeapProfiler::TakeSnapshot) {
