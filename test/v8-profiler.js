@@ -97,6 +97,14 @@ describe('v8-profiler', function() {
         }
       });
 
+      it('should restore heap limit without arguments (node8 only)', function() {
+        if (NODE_V_010) {
+          expect(profiler.restoreHeapLimit).to.throw();
+        } else if (NODE_V_8x){
+          expect(profiler.restoreHeapLimit).to.not.throw();
+        }
+      });
+
       it('should cache snapshots', function() {
         expect(Object.keys(profiler.snapshots)).to.have.length(1);
       });

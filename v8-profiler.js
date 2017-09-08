@@ -142,6 +142,10 @@ var profiler = {
     binding.heap.increaseHeapLimit();
   },
 
+  restoreHeapLimit: function(){
+    binding.heap.restoreHeapLimit();
+  },
+
   takeSnapshot: function(name, control) {
     if (typeof name == 'function') {
       control = name;

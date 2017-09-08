@@ -18,6 +18,8 @@ var profiler = require('v8-profiler');
 
 `increaseHeapLimit()` - Tells V8 the current isolate is used for debugging and requires a higher heap limit. Useful when you want to take a heap snapshot just before an out of memory occurs.
 
+`restoreHeapLimit()` - Restores the original heap limit after `increaseHeapLimit()` was called.
+
 `deleteAllSnapshots()` - works as described in name.
 
 ```js

@@ -87,6 +87,7 @@ describe('binding', function() {
       it('has expected structure', function() {
         var properties = [
           'increaseHeapLimit',
+          'restoreHeapLimit',
           'takeSnapshot',
           'startTrackingHeapObjects',
           'stopTrackingHeapObjects',
