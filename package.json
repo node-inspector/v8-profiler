@@ -1,6 +1,6 @@
 {
   "name": "v8-profiler",
-  "version": "5.7.0",
+  "version": "5.7.1",
   "description": "node bindings for the v8 profiler",
   "homepage": "http://github.com/node-inspector/v8-profiler",
   "author": "Danny Coates <dannycoates@gmail.com>",
@@ -30,7 +30,7 @@
     "inspector"
   ],
   "engines": {
-    "node": ">=0.10"
+    "node": ">=8.0"
   },
   "main": "v8-profiler",
   "dependencies": {
@@ -49,6 +49,6 @@
     "install": "node-pre-gyp install --fallback-to-build",
     "rebuild": "node-pre-gyp rebuild",
     "release": "node ./tools/release.js $@",
-    "test": "mocha --debug"
+    "test": "mocha"
   }
 }

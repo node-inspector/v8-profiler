@@ -16,6 +16,10 @@ var profiler = require('v8-profiler');
 ## API
 `takeSnapshot([name])` - returns new HEAP Snapshot instance. `name` is optional argument, by default snapshot name will be constructed from his uid.
 
+`increaseHeapLimit()` - Node.js 8+: Tells V8 the current isolate is used for debugging and requires a higher heap limit. Useful when you want to take a heap snapshot just before an out of memory occurs.
+
+`restoreHeapLimit()` - Node.js 8+: Restores the original heap limit after `increaseHeapLimit()` was called.
+
 `deleteAllSnapshots()` - works as described in name.
 
 ```js

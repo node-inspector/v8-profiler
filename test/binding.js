@@ -86,6 +86,8 @@ describe('binding', function() {
     describe('Profiler', function() {
       it('has expected structure', function() {
         var properties = [
+          'increaseHeapLimit',
+          'restoreHeapLimit',
           'takeSnapshot',
           'startTrackingHeapObjects',
           'stopTrackingHeapObjects',
