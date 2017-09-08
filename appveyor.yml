@@ -5,6 +5,10 @@ environment:
     secure: jJxKoyWputzRz2EjAT9i/vBzYt2+lcjKZ5D6O5TBaS9+anpYHn2XWbOut5dkOgh0
   node_pre_gyp_region: eu-central-1
   matrix:
+    - NODE_VERSION: 8
+      platform: x64
+    - NODE_VERSION: 8
+      platform: x86
     - NODE_VERSION: 7
       platform: x64
     - NODE_VERSION: 7

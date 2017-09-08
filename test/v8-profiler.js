@@ -90,17 +90,17 @@ describe('v8-profiler', function() {
       });
 
       it('should increase heap limit without arguments (node8 only)', function() {
-        if (NODE_V_010) {
+        if (!NODE_V_8x) {
           expect(profiler.increaseHeapLimit).to.throw();
-        } else if (NODE_V_8x){
+        } else {
           expect(profiler.increaseHeapLimit).to.not.throw();
         }
       });
 
       it('should restore heap limit without arguments (node8 only)', function() {
-        if (NODE_V_010) {
+        if (!NODE_V_8x) {
           expect(profiler.restoreHeapLimit).to.throw();
-        } else if (NODE_V_8x){
+        } else {
           expect(profiler.restoreHeapLimit).to.not.throw();
         }
       });
