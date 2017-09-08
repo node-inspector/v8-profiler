@@ -72,7 +72,7 @@ namespace nodex {
   NAN_METHOD(HeapProfiler::IncreaseHeapLimit) {
 #if (NODE_MODULE_VERSION > 0x0038)
       v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
-#elif
+#else
       throw std::runtime_error("IncreaseHeapLimitForDebugging is only available from Node.js v8+");
 #endif
     return;
@@ -81,7 +81,7 @@ namespace nodex {
   NAN_METHOD(HeapProfiler::RestoreHeapLimit) {
 #if (NODE_MODULE_VERSION > 0x0038)
       v8::Isolate::GetCurrent()->RestoreOriginalHeapLimit();
-#elif
+#else
       throw std::runtime_error("RestoreOriginalHeapLimit is only available from Node.js v8+");
 #endif
     return;
