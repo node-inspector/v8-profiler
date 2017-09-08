@@ -115,7 +115,7 @@ describe('v8-profiler', function() {
       });
 
       it('should use control function, if started with function argument', function(done) {
-        if (NODE_V_010) {
+        if (!NODE_V_8x) {
           // Fix for Windows
           var checked = false;
           profiler.takeSnapshot(function(progress, total) {
@@ -125,7 +125,7 @@ describe('v8-profiler', function() {
               done();
             }
           });
-        } else if (NODE_V_8x){
+        } else {
           profiler.takeSnapshot();
           done();
         }
