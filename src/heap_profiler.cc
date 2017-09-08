@@ -54,6 +54,7 @@ namespace nodex {
     Local<Object> heapProfiler = Nan::New<Object>();
     Local<Object> snapshots = Nan::New<Object>();
 
+    Nan::SetMethod(heapProfiler, "increaseHeapLimit", HeapProfiler::IncreaseHeapLimit);
     Nan::SetMethod(heapProfiler, "takeSnapshot", HeapProfiler::TakeSnapshot);
     Nan::SetMethod(heapProfiler, "startTrackingHeapObjects", HeapProfiler::StartTrackingHeapObjects);
     Nan::SetMethod(heapProfiler, "stopTrackingHeapObjects", HeapProfiler::StopTrackingHeapObjects);
@@ -66,13 +67,20 @@ namespace nodex {
     target->Set(Nan::New<String>("heap").ToLocalChecked(), heapProfiler);
   }
 
+  NAN_METHOD(HeapProfiler::IncreaseHeapLimit) {
+    v8::Isolate::GetCurrent()->IncreaseHeapLimitForDebugging();
+    return;
+  }
+
   NAN_METHOD(HeapProfiler::TakeSnapshot) {
     ActivityControlAdapter* control = new ActivityControlAdapter(info[1]);
 #if (NODE_MODULE_VERSION < 0x000F)
     Local<String> title = info[0]->ToString();
 #endif
 
-#if (NODE_MODULE_VERSION > 0x002C)
+#if (NODE_MODULE_VERSION > 0x0038)
+    const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot();
+#elif (NODE_MODULE_VERSION > 0x002C)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(control);
 #elif (NODE_MODULE_VERSION > 0x000B)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(title, control);

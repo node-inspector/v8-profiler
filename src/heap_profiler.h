@@ -14,6 +14,7 @@ namespace nodex {
       virtual ~HeapProfiler();
 
     protected:
+      static NAN_METHOD(IncreaseHeapLimit);
       static NAN_METHOD(TakeSnapshot);
       static NAN_METHOD(StartTrackingHeapObjects);
       static NAN_METHOD(StopTrackingHeapObjects);

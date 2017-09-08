@@ -138,6 +138,10 @@ var profiler = {
 
   get snapshots() { return binding.heap.snapshots; },
 
+  increaseHeapLimit: function(){
+    binding.heap.increaseHeapLimit();
+  },
+
   takeSnapshot: function(name, control) {
     if (typeof name == 'function') {
       control = name;

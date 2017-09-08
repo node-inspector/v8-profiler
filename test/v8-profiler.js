@@ -2,6 +2,7 @@ const expect  = require('chai').expect,
       profiler = require('../');
 
 const NODE_V_010 = /^v0\.10\.\d+$/.test(process.version);
+const NODE_V_8x = process.version.indexOf("v8.") === 0;
 
 describe('v8-profiler', function() {
   describe('CPU', function() {
@@ -88,6 +89,14 @@ describe('v8-profiler', function() {
         expect(profiler.takeSnapshot).to.not.throw();
       });
 
+      it('should increase heap limit without arguments (node8 only)', function() {
+        if (NODE_V_010) {
+          expect(profiler.increaseHeapLimit).to.throw();
+        } else if (NODE_V_8x){
+          expect(profiler.increaseHeapLimit).to.not.throw();
+        }
+      });
+
       it('should cache snapshots', function() {
         expect(Object.keys(profiler.snapshots)).to.have.length(1);
       });
@@ -98,15 +107,20 @@ describe('v8-profiler', function() {
       });
 
       it('should use control function, if started with function argument', function(done) {
-        // Fix for Windows
-        var checked = false;
-        profiler.takeSnapshot(function(progress, total) {
-          if (progress === total) {
-            if (checked) return;
-            checked = true;
-            done();
-          }
-        });
+        if (NODE_V_010) {
+          // Fix for Windows
+          var checked = false;
+          profiler.takeSnapshot(function(progress, total) {
+            if (progress === total) {
+              if (checked) return;
+              checked = true;
+              done();
+            }
+          });
+        } else if (NODE_V_8x){
+          profiler.takeSnapshot();
+          done();
+        }
       });
 
       it('should write heap stats', function(done) {
