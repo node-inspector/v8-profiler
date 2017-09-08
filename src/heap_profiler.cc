@@ -1,6 +1,7 @@
 #include "heap_profiler.h"
 #include "heap_snapshot.h"
 #include "heap_output_stream.h"
+#include <stdexcept>
 
 namespace nodex {
   using v8::ActivityControl;
