@@ -1,12 +1,12 @@
 {
-  "name": "v8-profiler",
-  "version": "5.7.0",
+  "name": "v8-profiler-next",
+  "version": "6.0.0",
   "description": "node bindings for the v8 profiler",
-  "homepage": "http://github.com/node-inspector/v8-profiler",
-  "author": "Danny Coates <dannycoates@gmail.com>",
+  "homepage": "http://github.com/hyj1991/v8-profiler-next",
+  "author": "Danny Coates <dannycoates@gmail.com> hyj1991 <66cfat66@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git://github.com/node-inspector/v8-profiler.git"
+    "url": "https://github.com/hyj1991/v8-profiler-next.git"
   },
   "contributors": [
     {
@@ -32,7 +32,7 @@
   "engines": {
     "node": ">=0.10"
   },
-  "main": "v8-profiler",
+  "main": "v8-profiler-next",
   "dependencies": {
     "nan": "^2.5.1",
     "node-pre-gyp": "^0.6.34"
