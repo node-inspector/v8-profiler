@@ -17,6 +17,7 @@ namespace nodex {
       static NAN_METHOD(StartProfiling);
       static NAN_METHOD(StopProfiling);
       static NAN_METHOD(SetSamplingInterval);
+
   };
 } //namespace nodex
 

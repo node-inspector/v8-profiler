@@ -12,6 +12,7 @@ namespace nodex {
   using v8::FunctionTemplate;
   using v8::String;
   using v8::Value;
+  using v8::Uint32;
 
 
   Nan::Persistent<ObjectTemplate> GraphNode::graph_node_template_;
@@ -65,9 +66,10 @@ namespace nodex {
 
     Local<Object> graph_node;
     Local<Object> _cache = Nan::New(graph_node_cache);
-    int32_t _id = node->GetId();
-    if (_cache->Has(_id)) {
-      graph_node = _cache->Get(_id)->ToObject();
+    Local<Uint32> id = Nan::New<Uint32>(uint32_t(node->GetId()));
+
+    if (_cache->Has(id)) {
+      graph_node = _cache->Get(id)->ToObject();
     } else {
       graph_node = Nan::New(graph_node_template_)->NewInstance();
       Nan::SetInternalFieldPointer(graph_node, 0, const_cast<HeapGraphNode*>(node));
@@ -117,7 +119,6 @@ namespace nodex {
 #else
       Local<String> name = Nan::New<String>(node->GetName());
 #endif
-      Local<Value> id = Nan::New<Number>(_id);
       graph_node->Set(Nan::New<String>("type").ToLocalChecked(), type);
       graph_node->Set(Nan::New<String>("name").ToLocalChecked(), name);
       graph_node->Set(Nan::New<String>("id").ToLocalChecked(), id);
@@ -127,7 +128,7 @@ namespace nodex {
       graph_node->Set(Nan::New<String>("shallowSize").ToLocalChecked(), shallowSize);
 #endif
 
-      _cache->Set(_id, graph_node);
+      _cache->Set(id, graph_node);
     }
 
     return scope.Escape(graph_node);

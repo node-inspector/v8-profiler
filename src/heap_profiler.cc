@@ -32,7 +32,11 @@ namespace nodex {
           Nan::New<Integer>(total)
         };
 
+#if (NODE_MODULE_VERSION > 0x0033)
+        TryCatch try_catch(v8::Isolate::GetCurrent());
+#else
         TryCatch try_catch;
+#endif
         abort = reportProgress->Call(Nan::GetCurrentContext()->Global(), 2, argv);
 
         if (try_catch.HasCaught()) {
@@ -72,7 +76,9 @@ namespace nodex {
     Local<String> title = info[0]->ToString();
 #endif
 
-#if (NODE_MODULE_VERSION > 0x002C)
+#if (NODE_MODULE_VERSION > 0x0038)
+    const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot();
+#elif (NODE_MODULE_VERSION > 0x002C)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(control);
 #elif (NODE_MODULE_VERSION > 0x000B)
     const HeapSnapshot* snapshot = v8::Isolate::GetCurrent()->GetHeapProfiler()->TakeHeapSnapshot(title, control);
